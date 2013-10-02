@@ -1,6 +1,10 @@
 """
 Simplified Item, based on Scrapy Item
 
+Note: This classes were added just for testing scrapy-dblite 
+in case when scrapy is not installed
+
+
 Copyright (c) Scrapy developers.
 All rights reserved.
 
