@@ -1,6 +1,6 @@
 import unittest
 
-from pydictlite.item import Item, Field
+from dblite.item import Item, Field
 
 
 class ItemTest(unittest.TestCase):

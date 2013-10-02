@@ -1,6 +1,6 @@
 import unittest
 
-from pydictlite.sql import WhereBuilder
+from dblite.sql import WhereBuilder
 
 class WhereBuilderTest(unittest.TestCase):
 

@@ -1,9 +1,9 @@
 import os
 import unittest
 
-from pydictlite import Storage
+from dblite import Storage
 
-class PyDictLiteTest(unittest.TestCase):
+class DBLiteTest(unittest.TestCase):
 
     def test_create_new_db(self):
         ''' test creation of new database
@@ -138,6 +138,7 @@ class PyDictLiteTest(unittest.TestCase):
         self.assertEqual(len(ds), 1)
         ds.delete({'f1': 10})      
         self.assertEqual(len(ds), 0)
+        ds.commit()
         ds.close()          
 
     def test_wrong_delete(self):

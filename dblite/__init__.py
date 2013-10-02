@@ -8,7 +8,7 @@
 import os
 import sqlite3
 
-from pydictlite.sql import WhereBuilder
+from dblite.sql import WhereBuilder
 
 class Storage(object):
     ''' Storage
