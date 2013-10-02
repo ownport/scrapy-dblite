@@ -10,6 +10,12 @@ import sqlite3
 
 from dblite.sql import WhereBuilder
 
+def open(uri, item=None, autocommit=False):
+    ''' open sqlite database by uri and Item class
+    '''
+    return Storage(db='', table='', fieldnames=[], autocommit=autocommit)
+
+
 class Storage(object):
     ''' Storage
     
