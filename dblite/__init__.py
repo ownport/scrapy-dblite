@@ -16,7 +16,7 @@ from urlparse import urlparse
 SUPPORTED_BACKENDS = ['sqlite',]
 
 
-def open(uri, item=None, autocommit=False):
+def open(item, uri, autocommit=False):
     ''' open sqlite database by uri and Item class
     '''
     if not uri or uri.find('://') <= 0:
@@ -26,13 +26,7 @@ def open(uri, item=None, autocommit=False):
         raise RuntimeError('Unknown backend: {}'.format(backend))
     database, table = rest_uri.split(':')
 
-    fieldnames = []
-    if item is not None:
-        fields = [m[1] for m in inspect.getmembers(item) if m[0] == 'fields']
-        if len(fields) != 1:
-            raise RuntimeError('Unknown item type, no fields: %s' % item)
-        fieldnames = fields[0].keys()
-    return Storage(db=database, table=table, fieldnames=fieldnames, autocommit=autocommit)
+    return Storage(db=database, table=table, item=item, autocommit=autocommit)
 
 
 class Storage(object):
@@ -40,7 +34,7 @@ class Storage(object):
     
     store simple dictionaries in sqlite database
     '''
-    def __init__(self, db, table, fieldnames=[], indexes=[], autocommit=False):
+    def __init__(self, db, table, item=None, indexes=[], autocommit=False):
         ''' __init__
         
         db          - filename to sqlite database
@@ -62,9 +56,14 @@ class Storage(object):
         else:
             raise RuntimeError('Empty table name, "%s"' % db)
 
-        # check if database does not exist, fieldnames must be defined        
-        if not os.path.isfile(self._db) and not fieldnames:
-            raise RuntimeError('fieldnames must be defined for new database')
+        self._fieldnames = []
+        if item is not None:
+            fields = [m[1] for m in inspect.getmembers(item) if m[0] == 'fields']
+            if len(fields) != 1:
+                raise RuntimeError('Unknown item type, no fields: %s' % item)
+            self._fieldnames = fields[0].keys()
+        else:
+            raise RuntimeError('Item class is not defined, %s' % item)
         
         # sqlite connection
         try:
@@ -79,13 +78,6 @@ class Storage(object):
         # commit counter increased every time after put without commit()
         self._commit_counter = 0 
 
-        # get fieldnames from existig database
-        if fieldnames:
-            self._fieldnames = fieldnames
-        else:
-            self._cursor.execute('PRAGMA table_info({});'.format(self._table))
-            self._fieldnames = [f[1] for f in self._cursor.fetchall()]
-
         self._create_table(self._table, self._fieldnames)
 
     @property
@@ -97,6 +89,8 @@ class Storage(object):
     def _create_table(self, table_name, fieldnames):
         ''' create sqlite's table for storing simple dictionaries
         '''
+        if not fieldnames:
+            raise RuntimeError('Item fieldnames are not defined')
         sql_fields = ','.join([f for f in fieldnames])
         SQL = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (table_name, sql_fields)
         try:
