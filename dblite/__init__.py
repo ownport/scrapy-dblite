@@ -19,14 +19,7 @@ SUPPORTED_BACKENDS = ['sqlite',]
 def open(item, uri, autocommit=False):
     ''' open sqlite database by uri and Item class
     '''
-    if not uri or uri.find('://') <= 0:
-        raise RuntimeError('Incorrect URI definition: {}'.format(uri))
-    backend, rest_uri = uri.split('://')
-    if backend not in SUPPORTED_BACKENDS:
-        raise RuntimeError('Unknown backend: {}'.format(backend))
-    database, table = rest_uri.split(':')
-
-    return Storage(db=database, table=table, item=item, autocommit=autocommit)
+    return Storage(item, uri, autocommit)
 
 
 class Storage(object):
@@ -34,42 +27,43 @@ class Storage(object):
     
     store simple dictionaries in sqlite database
     '''
-    def __init__(self, db, table, item=None, indexes=[], autocommit=False):
+    def __init__(self, item, uri, autocommit=False):
         ''' __init__
         
-        db          - filename to sqlite database
-        fieldnames  - the list of fieldnames
-        indexes     - NOT IMPLEMENTED YET
+        item        - Scrapy item class
+        uri         - URI to sqlite database, sqlite://<sqlite-database>:<table>
         autocommit  - few variations are possible: boolean (False/True) or integer
                      True - autocommit after each put()
                      False - no autocommit, commit() only manual
                      [integer] - autocommit after N[integer] put()
         '''
-        # database file
-        if db:
-            self._db = db
-        else:
-            raise RuntimeError('Empty database name, "%s"' % db)
-        # database table
-        if table:
-            self._table = table.split(' ')[0]
-        else:
-            raise RuntimeError('Empty table name, "%s"' % db)
-
-        self._fieldnames = []
+        self._item_class = item
+        self._fieldnames = set()
         if item is not None:
             fields = [m[1] for m in inspect.getmembers(item) if m[0] == 'fields']
             if len(fields) != 1:
                 raise RuntimeError('Unknown item type, no fields: %s' % item)
-            self._fieldnames = fields[0].keys()
+            self._fieldnames = set(fields[0].keys())
         else:
             raise RuntimeError('Item class is not defined, %s' % item)
+
+        database, table = self.parse_uri(uri)
+        # database file
+        if database:
+            self._db = database
+        else:
+            raise RuntimeError('Empty database name, "%s"' % database)
+        # database table
+        if table:
+            self._table = table.split(' ')[0]
+        else:
+            raise RuntimeError('Empty table name, "%s"' % table)
         
         # sqlite connection
         try:
-            self._conn = sqlite3.connect(db)
+            self._conn = sqlite3.connect(database)
         except sqlite3.OperationalError, err:
-            raise RuntimeError("%s, database: %s" % (err, db))
+            raise RuntimeError("%s, database: %s" % (err, database))
             
         # sqlite cursor
         self._cursor = self._conn.cursor()
@@ -79,6 +73,19 @@ class Storage(object):
         self._commit_counter = 0 
 
         self._create_table(self._table, self._fieldnames)
+
+    @staticmethod
+    def parse_uri(uri):
+        ''' parse URI
+        '''
+        if not uri or uri.find('://') <= 0:
+            raise RuntimeError('Incorrect URI definition: {}'.format(uri))
+        backend, rest_uri = uri.split('://')
+        if backend not in SUPPORTED_BACKENDS:
+            raise RuntimeError('Unknown backend: {}'.format(backend))
+        database, table = rest_uri.split(':')
+
+        return database, table
 
     @property
     def fieldnames(self):
@@ -115,7 +122,7 @@ class Storage(object):
             _id = r[0]
             fields = [f.split(' ')[0] for f in self._fieldnames]
             dict_res = dict([(fields[i], v) for i, v in enumerate(r[1:])])
-            yield (_id, dict_res)
+            yield (_id, self._item_class(dict_res))
         
     def _do_autocommit(self):
         ''' perform autocommit
@@ -133,24 +140,27 @@ class Storage(object):
                 self.commit()
                 self._commit_counter = 0
 
-    def put(self, dictionary):
-        ''' store dictionary in sqlite database
+    def put(self, item):
+        ''' store item in sqlite database
         '''
         # prepare SQL
-        fieldnames = ','.join([v for v in dictionary.keys()])
-        fields_template = ','.join(['?' for f in dictionary])
+        if not isinstance(item, self._item_class):
+            raise RuntimeError('Items mismatch for %s and %s' % (self._item_class, type(item)))
+
+        fieldnames = ','.join([v for v in item.keys()])
+        fields_template = ','.join(['?' for f in item])
         SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fields_template)
         try:
-            self._cursor.execute(SQL, [v for v in dictionary.values()])
+            self._cursor.execute(SQL, [v for v in item.values()])
         except sqlite3.OperationalError, err:
-            raise RuntimeError('%s, SQL: %s, values: %s' % (err, SQL, [v for v in dictionary.values()]) )
+            raise RuntimeError('%s, SQL: %s, values: %s' % (err, SQL, [v for v in item.values()]) )
         self._do_autocommit()        
 
-    def put_many(self, dictionaries):
-        ''' store dictionaries in sqlite database
+    def put_many(self, items):
+        ''' store items in sqlite database
         '''
-        for d in dictionaries:
-            self.put(d)
+        for item in items:
+            self.put(item)
 
     def delete(self, criteria=None, _all=False):
         ''' delete dictionary(ies) in sqlite database
