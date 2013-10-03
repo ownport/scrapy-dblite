@@ -15,6 +15,17 @@ class Product(Item):
     last_updated = Field(serializer=str)
 ```
 
+For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html)
+
+## Working with storage
+
+The simplest way to open sqlite database for storing Scrapy items is use `open()`
+
+```python
+import dblite
+ds = dblite.open('sqlite://tests/db/test-db.sqlite:test_tbl')
+```
+
 ## Similar projects
 
 - [https://github.com/noplay/scrapy-mongodb](Mongodb support for scrapy)
