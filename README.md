@@ -22,8 +22,11 @@ For more information about Scrapy Items please read [documentation](http://doc.s
 The simplest way to open sqlite database for storing Scrapy items is use `open()`
 
 ```python
-import dblite
-ds = dblite.open('sqlite://tests/db/test-db.sqlite:test_tbl', Product)
+>>> import dblite
+>>> ds = dblite.open(Product, 'sqlite://tests/db/test-db.sqlite:test_tbl')
+>>> ds
+<dblite.Storage object at 0x17e1f10>
+>>>
 ```
 
 
