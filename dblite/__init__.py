@@ -165,7 +165,7 @@ class Storage(object):
     def delete(self, criteria=None, _all=False):
         ''' delete dictionary(ies) in sqlite database
         
-        _all = True - delete all dictionaries
+        _all = True - delete all items
         '''
         SQL = 'DELETE FROM %s' % self._table
         WHERE = WhereBuilder().parse(criteria)
