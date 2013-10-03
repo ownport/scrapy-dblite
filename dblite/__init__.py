@@ -6,14 +6,33 @@
 
 
 import os
+import inspect
 import sqlite3
 
 from dblite.sql import WhereBuilder
+from urlparse import urlparse
+
+
+SUPPORTED_BACKENDS = ['sqlite',]
+
 
 def open(uri, item=None, autocommit=False):
     ''' open sqlite database by uri and Item class
     '''
-    return Storage(db='', table='', fieldnames=[], autocommit=autocommit)
+    if not uri or uri.find('://') <= 0:
+        raise RuntimeError('Incorrect URI definition: {}'.format(uri))
+    backend, rest_uri = uri.split('://')
+    if backend not in SUPPORTED_BACKENDS:
+        raise RuntimeError('Unknown backend: {}'.format(backend))
+    database, table = rest_uri.split(':')
+
+    fieldnames = []
+    if item is not None:
+        fields = [m[1] for m in inspect.getmembers(item) if m[0] == 'fields']
+        if len(fields) != 1:
+            raise RuntimeError('Unknown item type, no fields: %s' % item)
+        fieldnames = fields[0].keys()
+    return Storage(db=database, table=table, fieldnames=fieldnames, autocommit=autocommit)
 
 
 class Storage(object):
@@ -26,16 +45,22 @@ class Storage(object):
         
         db          - filename to sqlite database
         fieldnames  - the list of fieldnames
-        indexes     - 
+        indexes     - NOT IMPLEMENTED YET
         autocommit  - few variations are possible: boolean (False/True) or integer
                      True - autocommit after each put()
                      False - no autocommit, commit() only manual
                      [integer] - autocommit after N[integer] put()
         '''
         # database file
-        self._db = db
+        if db:
+            self._db = db
+        else:
+            raise RuntimeError('Empty database name, "%s"' % db)
         # database table
-        self._table = table.split(' ')[0]
+        if table:
+            self._table = table.split(' ')[0]
+        else:
+            raise RuntimeError('Empty table name, "%s"' % db)
 
         # check if database does not exist, fieldnames must be defined        
         if not os.path.isfile(self._db) and not fieldnames:

@@ -1,23 +1,30 @@
 import os
 import unittest
 
-from dblite import Storage
+import dblite
+
 
 class DBLiteTest(unittest.TestCase):
 
-    def test_create_new_db(self):
+    def test_attempts_to_create_new_db(self):
+        ''' test_attempts_to_create_new_db
+        '''
+        self.assertRaises(RuntimeError, dblite.Storage, '', 'test')
+        self.assertRaises(RuntimeError, dblite.Storage, 'test', '')
+
+    def test_create_new_db_wo_fieldnames(self):
         ''' test creation of new database
         '''
         db = 'tests/db/new_db.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        self.assertRaises(RuntimeError, Storage, db, 'test')
+        self.assertRaises(RuntimeError, dblite.Storage, db, 'test')
 
     def test_create_db_wrong_path(self):
         ''' test creation of new database with wrong path
         '''
         db = 'tests/db2/db.sqlite'
-        self.assertRaises(RuntimeError, Storage, db, 'test', fieldnames=['f1', 'f2'])
+        self.assertRaises(RuntimeError, dblite.Storage, db, 'test', fieldnames=['f1', 'f2'])
 
     def test_create_simple_db(self):
         ''' test_create_simple_db
@@ -25,25 +32,55 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/simple_db.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        ds = Storage(db, 'test', fieldnames=['f1','f2'])
-        self.assertEqual(type(ds), Storage)
+        ds = dblite.Storage(db, 'test', fieldnames=['f1','f2'])
+        self.assertEqual(type(ds), dblite.Storage)
         ds.close()
         
     def test_detect_db_fieldnames(self):
         ''' test detect db fieldnames
         '''
         db = 'tests/db/simple_db.sqlite'
-        ds = Storage(db, 'test')
+        ds = dblite.Storage(db, 'test')
         self.assertEqual(ds.fieldnames, ['f1','f2'])
         ds.close()
-    
+
+    def test_open_incorrect_uri(self):
+        ''' test_open_incorrect_uri
+        '''
+        self.assertRaises(RuntimeError, dblite.open, 'sqlite:/tests:test')
+        self.assertRaises(RuntimeError, dblite.open, 'sqlit://tests:test')
+
+    def test_attempts_to_open_database(self):
+        ''' test_attempts_to_open_database
+        '''
+        self.assertRaises(RuntimeError, dblite.open, 'sqlite://tests:test')
+        self.assertRaises(RuntimeError, dblite.open, 'sqlite://tests:test', object)
+
+    def test_open_storage(self):
+        ''' test open storage
+        '''
+        from dblite.item import Item, Field
+
+        class Product(Item):
+            name = Field()
+            price = Field()
+            stock = Field()
+            last_updated = Field(serializer=str)
+
+        uri = 'sqlite://tests/db/db-open.sqlite:test'
+
+        ds = dblite.open(uri, Product)
+        ds.put(Product({'name': 'product_name', 'price': 100}))
+        self.assertEqual(len([d for d in ds.get()]), 1)
+        ds.close()
+
     def test_put_get_delete(self):
         ''' test put & get & delete dicts to/from database
         '''
         db = 'tests/db/db-put-and-get.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        ds = Storage(db, 'test', fieldnames=['f1','f2','f3'])
+        ds = dblite.Storage(db, 'test', fieldnames=['f1','f2','f3'])
         dicts_orig = [{'f1': i, 'f2': i, 'f3': i,} for i in range(10)]
         for d in dicts_orig:
             ds.put(d)         
@@ -66,7 +103,7 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/db-put-many.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        ds = Storage(db, 'test', fieldnames=['f1','f2','f3'])
+        ds = dblite.Storage(db, 'test', fieldnames=['f1','f2','f3'])
         dicts_orig = [{'f1': i, 'f2': i, 'f3': i,} for i in range(10)]
         ds.put_many(dicts_orig)
         ds.commit()
@@ -83,7 +120,7 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/db-autocommit.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        ds = Storage(db, 'test', fieldnames=['f1',], autocommit=True)
+        ds = dblite.Storage(db, 'test', fieldnames=['f1',], autocommit=True)
         for i in xrange(12):
             ds.put({'f1': i})
         self.assertEqual(len(ds), 12)    
@@ -94,7 +131,7 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/db-autocommit.sqlite'
         if os.path.isfile(db):
             os.remove(db)
-        ds = Storage(db, 'test', fieldnames=['f1',], autocommit=50)
+        ds = dblite.Storage(db, 'test', fieldnames=['f1',], autocommit=50)
         for i in xrange(105):
             ds.put({'f1': i})
         self.assertEqual(len(ds), 105)    
@@ -103,14 +140,14 @@ class DBLiteTest(unittest.TestCase):
         ''' test wrong get
         '''
         db = 'tests/db/wrong_get.sqlite'
-        ds = Storage(db, 'test', fieldnames=['f1', 'f2'])
+        ds = dblite.Storage(db, 'test', fieldnames=['f1', 'f2'])
         self.assertEqual([1 for _ in ds.get('f1')], [])
 
     def test_simple_get(self):
         ''' test simple get
         '''
         db = 'tests/db/simple_get.sqlite'
-        ds = Storage(db, 'test', fieldnames=['f1', 'f2'], autocommit=True)
+        ds = dblite.Storage(db, 'test', fieldnames=['f1', 'f2'], autocommit=True)
         
         ds.delete(_all=True)
         ds.commit()
@@ -133,7 +170,7 @@ class DBLiteTest(unittest.TestCase):
         ''' test conditional delete
         '''
         db = 'tests/db/cond-delete.sqlite'
-        ds = Storage(db, 'test', fieldnames=['f1', ], autocommit=True)
+        ds = dblite.Storage(db, 'test', fieldnames=['f1', ], autocommit=True)
         ds.put({'f1': 10})
         self.assertEqual(len(ds), 1)
         ds.delete({'f1': 10})      
@@ -145,7 +182,7 @@ class DBLiteTest(unittest.TestCase):
         ''' test wrong delete
         '''
         db = 'tests/db/wrong-delete.sqlite'
-        ds = Storage(db, 'test', fieldnames=['f1',], )
+        ds = dblite.Storage(db, 'test', fieldnames=['f1',], )
         self.assertRaises(RuntimeError, ds.delete, )
         
 
