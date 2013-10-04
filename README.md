@@ -9,8 +9,9 @@ According to Scrapy documentation Item objects are simple containers used to col
 from scrapy.item import Item, Field
 
 class Product(Item):
-    name = Field()
-    price = Field()
+	_id 	= Field()
+    name 	= Field()
+    price 	= Field()
 ```
 
 For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html)

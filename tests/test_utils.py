@@ -6,6 +6,7 @@ from dblite.item import Item, Field
 
 
 class Product(Item):
+    _id = Field()
     name = Field()
     price = Field()
     stock = Field()

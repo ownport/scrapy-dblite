@@ -9,8 +9,9 @@ URI_TEMPLATE = 'sqlite://{}:{}'
 
 
 class Product(Item):
-    name = Field()
-    price = Field()
+    _id     = Field()
+    name    = Field()
+    price   = Field()
 
 
 class DBLiteTest(unittest.TestCase):
@@ -21,6 +22,8 @@ class DBLiteTest(unittest.TestCase):
         uri = URI_TEMPLATE.format('', 'product')
         self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
         uri = URI_TEMPLATE.format('product', '')
+        self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
+        uri = URI_TEMPLATE.format('product', '##')
         self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
 
     def test_create_db_wrong_path(self):
@@ -47,7 +50,7 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/simple_db.sqlite'
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        self.assertEqual(set(ds.fieldnames), set(['name','price']))
+        self.assertEqual(set(ds.fieldnames), set(['_id','name','price']))
         ds.close()
 
     def test_no_fields_in_item(self):
@@ -74,6 +77,19 @@ class DBLiteTest(unittest.TestCase):
         uri = URI_TEMPLATE.format(db, 'none_item_class')
         self.assertRaises(RuntimeError, dblite.Storage, None, uri)
 
+    def test_wrong_put(self):
+        ''' test_wrong_put
+        '''
+        db = 'tests/db/wrong-put.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri)
+        
+        self.assertRaises(RuntimeError, ds.put, ['product#0', 1000])
+        self.assertRaises(RuntimeError, ds.put, {'name':'product#0', 'price': 1000})
+        ds.close()
+
     def test_put_get_delete(self):
         ''' test put & get & delete dicts to/from database
         '''
@@ -82,15 +98,15 @@ class DBLiteTest(unittest.TestCase):
             os.remove(db)
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        dicts_orig = [Product({'name': 'product#%d' % i, 'price': i,}) for i in range(10)]
-        for d in dicts_orig:
-            ds.put(d)         
+        products = [Product({'name': 'product#%d' % i, 'price': i,}) for i in range(10)]
+        for p in products:
+            ds.put(p)         
         ds.commit()
 
         self.assertEqual(len(ds), 10)
         
-        dicts_res = [d for i, d in ds.get()]
-        self.assertEqual(dicts_orig, dicts_res)
+        for product in products:
+            self.assertEqual(len([p for p in ds.get({'name': product['name']})]), 1)
         
         ds.delete(_all=True)
         ds.commit()
@@ -106,14 +122,14 @@ class DBLiteTest(unittest.TestCase):
             os.remove(db)
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        dicts_orig = [Product({'name': 'product#%d' % i, 'price': i,}) for i in range(10)]
-        ds.put_many(dicts_orig)
+        products = [Product({'name': 'product#%d' % i, 'price': i,}) for i in range(10)]
+        ds.put(products)
         ds.commit()
 
         self.assertEqual(len(ds), 10)
         
-        dicts_res = [d for i, d in ds.get()]
-        self.assertEqual(dicts_orig, dicts_res)        
+        for product in products:
+            self.assertEqual(len([p for p in ds.get({'name': product['name']})]), 1)
         ds.close()
 
     def test_autocommit_as_bool(self):
@@ -159,18 +175,18 @@ class DBLiteTest(unittest.TestCase):
         ds.commit()
         
         all_items = [Product({'name': 'product#%s' % i, 'price': i+100}) for i in range(10)]
-        ds.put_many(all_items)
+        ds.put(all_items)
         self.assertEqual(len(all_items), 10)     
         self.assertEqual(sum([1 for _ in ds.get()]), 10)
 
-        res = [d for _id, d in ds.get({'name': 'product#2'})]       
-        self.assertEqual(res, [{'name': 'product#2', 'price': 102},])
+        res = [d for d in ds.get({'name': 'product#2'})]       
+        self.assertEqual(len(res), 1)
 
-        res = [d for _id, d in ds.get({'price': 102})]       
-        self.assertEqual(res, [{'name': 'product#2', 'price': 102},])
+        res = [d for d in ds.get({'price': 102})]       
+        self.assertEqual(len(res), 1)
 
-        res = [d for _id, d in ds.get({'$and': {'name': 'product#2', 'price': 102}})]       
-        self.assertEqual(res, [{'name': 'product#2', 'price': 102},])
+        res = [d for d in ds.get({'$and': {'name': 'product#2', 'price': 102}})]       
+        self.assertEqual(len(res), 1)
 
     def test_conditional_delete(self):
         ''' test conditional delete

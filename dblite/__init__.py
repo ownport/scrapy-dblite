@@ -38,14 +38,7 @@ class Storage(object):
                      [integer] - autocommit after N[integer] put()
         '''
         self._item_class = item
-        self._fieldnames = set()
-        if item is not None:
-            fields = [m[1] for m in inspect.getmembers(item) if m[0] == 'fields']
-            if len(fields) != 1:
-                raise RuntimeError('Unknown item type, no fields: %s' % item)
-            self._fieldnames = set(fields[0].keys())
-        else:
-            raise RuntimeError('Item class is not defined, %s' % item)
+        self._fieldnames = None
 
         database, table = self.parse_uri(uri)
         # database file
@@ -64,7 +57,8 @@ class Storage(object):
             self._conn = sqlite3.connect(database)
         except sqlite3.OperationalError, err:
             raise RuntimeError("%s, database: %s" % (err, database))
-            
+        self._conn.row_factory = self._dict_factory
+
         # sqlite cursor
         self._cursor = self._conn.cursor()
         # autocommit data after put()
@@ -72,7 +66,19 @@ class Storage(object):
         # commit counter increased every time after put without commit()
         self._commit_counter = 0 
 
-        self._create_table(self._table, self._fieldnames)
+        self._create_table(self._table, self.fieldnames)
+
+    @staticmethod
+    def _dict_factory(cursor, row):
+        ''' factory for sqlite3 to return results as dict
+        '''
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            if col[0] == 'rowid':
+                d['_id'] = row[idx]
+            else:
+                d[col[0]] = row[idx]
+        return d
 
     @staticmethod
     def parse_uri(uri):
@@ -91,6 +97,14 @@ class Storage(object):
     def fieldnames(self):
         ''' return fieldnames
         '''
+        if not self._fieldnames:
+            if self._item_class is not None:
+                fields = [m[1] for m in inspect.getmembers(self._item_class) if m[0] == 'fields']
+                if len(fields) != 1:
+                    raise RuntimeError('Unknown item type, no fields: %s' % self._item_class)
+                self._fieldnames = set(fields[0].keys())
+            else:
+                raise RuntimeError('Item class is not defined, %s' % self._item_class)
         return self._fieldnames
 
     def _create_table(self, table_name, fieldnames):
@@ -98,12 +112,12 @@ class Storage(object):
         '''
         if not fieldnames:
             raise RuntimeError('Item fieldnames are not defined')
-        sql_fields = ','.join([f for f in fieldnames])
+        sql_fields = ','.join([f for f in fieldnames if f != '_id'])
         SQL = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (table_name, sql_fields)
         try:
             self._cursor.execute(SQL)
         except sqlite3.OperationalError, err:
-            raise RuntimeError('%s, SQL: %s' % (err, SQL))
+            raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
     def get(self, criteria=None):
         ''' returns dicts selected by criteria
@@ -119,10 +133,7 @@ class Storage(object):
 
         self._cursor.execute(SQL)
         for r in self._cursor.fetchall():
-            _id = r[0]
-            fields = [f.split(' ')[0] for f in self._fieldnames]
-            dict_res = dict([(fields[i], v) for i, v in enumerate(r[1:])])
-            yield (_id, self._item_class(dict_res))
+            yield self._item_class(r)
         
     def _do_autocommit(self):
         ''' perform autocommit
@@ -143,23 +154,33 @@ class Storage(object):
     def put(self, item):
         ''' store item in sqlite database
         '''
-        # prepare SQL
-        if not isinstance(item, self._item_class):
-            raise RuntimeError('Items mismatch for %s and %s' % (self._item_class, type(item)))
+        if isinstance(item, self._item_class):
+            self._put_one(item)
+        elif isinstance(item, (list, tuple)):
+            self._put_many(item)
+        else:
+            raise RuntimeError('Unknown item(s) type, %s' % type(item))
 
-        fieldnames = ','.join([v for v in item.keys()])
-        fields_template = ','.join(['?' for f in item])
-        SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fields_template)
+    def _put_one(self, item):
+        ''' store one item in database
+        '''
+        # prepare SQL
+        fieldnames = ','.join([f for f in item if f != '_id'])
+        fieldnames_template = ','.join(['?' for f in item if f != '_id'])
+        values = [v for k, v in item.items() if k != '_id']
+        SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fieldnames_template)
         try:
-            self._cursor.execute(SQL, [v for v in item.values()])
+            self._cursor.execute(SQL, values)
         except sqlite3.OperationalError, err:
-            raise RuntimeError('%s, SQL: %s, values: %s' % (err, SQL, [v for v in item.values()]) )
+            raise RuntimeError('Item put() error, %s, SQL: %s, values: %s' % (err, SQL, values) )
         self._do_autocommit()        
 
-    def put_many(self, items):
+    def _put_many(self, items):
         ''' store items in sqlite database
         '''
         for item in items:
+            if not isinstance(item, self._item_class):
+                raise RuntimeError('Items mismatch for %s and %s' % (self._item_class, type(item)))
             self.put(item)
 
     def delete(self, criteria=None, _all=False):
@@ -182,9 +203,9 @@ class Storage(object):
     def __len__(self):
         ''' return size of storage
         '''
-        SQL = 'SELECT count(*) FROM %s;' % self._table
+        SQL = 'SELECT count(*) as count FROM %s;' % self._table
         self._cursor.execute(SQL)
-        return int(self._cursor.fetchone()[0])
+        return int(self._cursor.fetchone()['count'])
 
     def commit(self):
         ''' commit changes
