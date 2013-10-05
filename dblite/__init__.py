@@ -132,8 +132,8 @@ class Storage(object):
             SQL = ''.join((SQL, ';'))
 
         self._cursor.execute(SQL)
-        for r in self._cursor.fetchall():
-            yield self._item_class(r)
+        for item in self._cursor.fetchall():
+            yield self._item_class(item)
         
     def _do_autocommit(self):
         ''' perform autocommit

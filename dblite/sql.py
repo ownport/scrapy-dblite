@@ -31,19 +31,19 @@ class WhereBuilder(object):
         if len(params) == 0:
             return ''        
         
-        result = ''
+        result = list()
         
         for k in params.keys():
             
             if k in LOGICAL_OPERATORS:
-                result = ' '.join((result, self._logical(k, params[k])))
+                result.append(self._logical(k, params[k]))
             else:
                 if k == '_id':
-                    result = ' '.join((result, "rowid=%s" % (self._value_wrapper(params[k]) )))
+                    result.append("rowid=%s" % (self._value_wrapper(params[k])))
                 else:
-                    result = ' '.join((result, "%s=%s" % (k, self._value_wrapper(params[k]) )))
+                    result.append("%s=%s" % (k, self._value_wrapper(params[k])))
             
-        return result.strip()
+        return ' AND '.join(result).strip()
                 
     def _logical(self, operator, params):
         ''' 
@@ -52,10 +52,13 @@ class WhereBuilder(object):
         $or:    joins query clauses with a logical OR returns all items 
                 that match the conditions of either clause.
         '''
-        if not isinstance(params, dict):
-            raise RuntimeError('Parameters should be defined via python dictionary, params: %s' % params)
 
-        result = ["(%s)" % self.parse(dict([(k, v),])) for k,v in params.items()]
+        if isinstance(params, dict):
+            result = ["(%s)" % self.parse(dict([(k, v),])) for k,v in params.items()]
+        elif isinstance(params, (list, tuple)):
+            result = ["(%s)" % self.parse(v) for v in params]
+        else:
+            raise RuntimeError('Unknow parameter type, %s:%s' % (type(params), params))
 
         if operator == '$and':
             return ' AND '.join(result)

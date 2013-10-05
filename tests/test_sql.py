@@ -20,6 +20,15 @@ class WhereBuilderTest(unittest.TestCase):
         builder = WhereBuilder()
         self.assertEqual( builder.parse({'f1': 'v1'}), 'f1="v1"' )
 
+    def test_logical_and_in_simple_form(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(
+            builder.parse(
+                    {'f1': 'v1', 'f2': 'v2'}), 
+                    'f1="v1" AND f2="v2"'
+        )
+
     def test_simple_request_with_logical_opers(self):
         
         builder = WhereBuilder()
@@ -35,17 +44,24 @@ class WhereBuilderTest(unittest.TestCase):
             }), 
             '(f1="v1") OR (f2="v2") OR (f3=2)',
         )
+        self.assertEqual(
+            builder.parse({
+                '$or': [{'f1': 'v1'}, {'f1': 'v1'},],
+            }), 
+            '(f1="v1") OR (f1="v1")',
+        )
+
 
     def test_wrong_request_with_logical_opers(self):
         
         builder = WhereBuilder()
         self.assertRaises(
             RuntimeError, 
-            builder.parse, {'$and': [('f1', 'v1'), ('f2', 'v2')]}, 
+            builder._logical, '$and2', {'f1': 'v1'}, 
         )
         self.assertRaises(
             RuntimeError, 
-            builder._logical, '$and2', {'f1': 'v1'}, 
+            builder._logical, '$and', 1, 
         )
 
 
