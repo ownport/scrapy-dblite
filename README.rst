@@ -12,41 +12,38 @@ According to `Scrapy documentation <http://doc.scrapy.org/en/latest/>`_ Item obj
 	    name 	= Field()
 	    price 	= Field()
 
-For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html). Item and Field classes also included in dblite library but there's no need to use them. It's just simplifed version of Scrapy's classes. 
+For more information about Scrapy Items please read `documentation <http://doc.scrapy.org/en/latest/topics/items.html>`_. Item and Field classes also included in dblite library but there's no need to use them. It's just simplifed version of Scrapy's classes. 
 
-The `_id` field is required to be defined for Item(). Most probably you will never use this directly but dblite is used for own logic: `_id` equals `rowid` in sqlite database.
+The *_id* field is required to be defined for Item(). Most probably you will never use this directly but dblite is used for own logic: *_id* equals *rowid* in sqlite database.
 
 Working with storage
 --------------------
-The simplest way to open sqlite database for storing Scrapy items is use `open()`
+The simplest way to open sqlite database for storing Scrapy items is use *open()*::
 
-```python
->>> import dblite
->>> ds = dblite.open(Product, 'sqlite://tests/db/test-db.sqlite:test_tbl')
->>> ds
-<dblite.Storage object at 0x17e1f10>
->>> ds.fieldnames
-set(['price', '_id', 'name'])
-```
+	>>> import dblite
+	>>> ds = dblite.open(Product, 'sqlite://tests/db/test-db.sqlite:test_tbl')
+	>>> ds
+	<dblite.Storage object at 0x17e1f10>
+	>>> ds.fieldnames
+	set(['price', '_id', 'name'])
 
-All manipulations with Items are performed via 3 methods: get(), put(), delete()
-```python
->>> p1 = Product(name='Laptop', price=1000)
->>> p1
-{'name': 'Laptop', 'price': 1000}
->>> ds.put(p1)
->>> [product for product in ds.get()]
-[{'_id': 1, 'name': u'Laptop', 'price': 1000}]
->>> ds.delete(p1)
->>> [i for i in ds.get()]
-[]
->>>
-```
+All manipulations with Items are performed via 3 methods: get(), put(), delete()::
+
+	>>> p1 = Product(name='Laptop', price=1000)
+	>>> p1
+	{'name': 'Laptop', 'price': 1000}
+	>>> ds.put(p1)
+	>>> [product for product in ds.get()]
+	[{'_id': 1, 'name': u'Laptop', 'price': 1000}]
+	>>> ds.delete(p1)
+	>>> [i for i in ds.get()]
+	[]
+	>>>
 
 More detail information about dblite can be founded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md) document
 
 How to use scrapy-dblite with Scrapy
 ------------------------------------
-```python
-```
+::
+	>>>
 
