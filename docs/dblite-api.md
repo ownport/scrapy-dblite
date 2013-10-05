@@ -1,5 +1,4 @@
 ### Storing Items in sqlite
-
 ```python
 >>> p1 = Product(name='Laptop', price=1000)
 >>> p2 = Product(name='Nettop', price=100)
@@ -11,8 +10,8 @@
 {'_id': 2, 'name': u'Nettop', 'price': 100}, 
 {'_id': 3, 'name': u'Desktop PC', 'price': 500}]
 ```
-### Select Items
 
+### Select Items
 Select all items from sqlite
 ```python
 >>> [p for p in ds.get()]
@@ -26,6 +25,7 @@ Selecting items by equality conditions
 >>> [p for p in ds.get({'name': u'Laptop'})]
 [{'_id': 1, 'name': u'Laptop', 'price': 1000}]
 ```
+
 To specify condition, use `{<field>: <value>}` to select all items that contain the `<field>` with the specified `<value>`
 
 You can also specify more than one field with logical AND conjunction
@@ -51,7 +51,6 @@ By using `$or` operator, you can select items with logical OR conjunction
 ```
 
 ### Delete items
-
 For deleting items you can specify as argument Item object 
 ```python
 >>> [p for p in ds.get({'name': u'Laptop'})]

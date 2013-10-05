@@ -32,7 +32,6 @@ set(['price', '_id', 'name'])
 ```
 
 All manipulations with Items are performed via 3 methods: get(), put(), delete()
-
 ```python
 >>> p1 = Product(name='Laptop', price=1000)
 >>> p1
@@ -45,7 +44,8 @@ All manipulations with Items are performed via 3 methods: get(), put(), delete()
 []
 >>>
 ```
-More detail information about dblite can be founeded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/docs/dblite-api.md) document
+
+More detail information about dblite can be founeded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md) document
 
 ## Similar projects
 	
