@@ -1,9 +1,9 @@
 scrapy-dblite
 =============
 
-Simple library for storing [Scrapy Items](http://doc.scrapy.org/en/latest/topics/items.html) in sqlite 
+Simple library for storing [Scrapy Items](http://doc.scrapy.org/en/latest/topics/items.html) in sqlite. There's no special requirements or dependencies for using this library but main goal of dblite is working together with [Scrapy](http://scrapy.org/) - a fast high-level screen scraping and web crawling framework, used to crawl websites and extract structured data from their pages.
 
-According to Scrapy documentation Item objects are simple containers used to collect the scraped data. They provide a dictionary-like API with a convenient syntax for declaring their available fields.
+According to [Scrapy documentation](http://doc.scrapy.org/en/latest/) Item objects are simple containers used to collect the scraped data. They provide a dictionary-like API with a convenient syntax for declaring their available fields.
 
 ```python
 from scrapy.item import Item, Field
@@ -45,9 +45,14 @@ All manipulations with Items are performed via 3 methods: get(), put(), delete()
 >>>
 ```
 
-More detail information about dblite can be founeded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md) document
+More detail information about dblite can be founded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md) document
+
+## How to use scrapy-dblite with Scrapy
+
+```python
+```
 
 ## Similar projects
 	
-- [https://github.com/noplay/scrapy-mongodb](Mongodb support for scrapy)
+- [Mongodb support for scrapy](https://github.com/noplay/scrapy-mongodb)
 
