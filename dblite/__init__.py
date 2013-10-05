@@ -3,7 +3,8 @@
 #
 #   simple library for stroring python dictionaries in sqlite database
 #
-
+__author__ = 'Andrey Usov <https://github.com/ownport/scrapy-dblite>'
+__version__ = '0.1'
 
 import os
 import inspect
