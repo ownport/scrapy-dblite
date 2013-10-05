@@ -52,9 +52,30 @@ To install scrapy-dblite directly from github::
 or install from `PyPI - the Python Package Index <https://pypi.python.org/pypi>`_::
 
 	pip install scrapy-dblite
-	
+
 How to use scrapy-dblite with Scrapy
 ------------------------------------
-::
-	>>>
+Using dblite in Item Pipeline::
+	
+	from scrapy.exceptions import DropItem
+	from myproject.items import Product
+	
+	import dblite
+
+	class StoreItemsPipeline(object):
+
+	    def __init__(self):
+	        self.ds = open(Product, 'sqlite://db/products.sqlite:items')
+
+	    def process_item(self, item, spider):
+	        
+	        if isinstance(item, Product):
+		        try:
+		        	self.ds.put(item)
+		        except dblite.DuplicateItem:
+		        	raise DropItem("Duplicate item found: %s" % item)
+		    else:
+		    	raise DropItem("Unknown item type, %s" % type(item))
+
+	        return item
 
