@@ -68,9 +68,9 @@ Using dblite in Item Pipeline::
         def process_item(self, item, spider):	        
             if isinstance(item, Product):
                 try:
-                	self.ds.put(item)
+                    self.ds.put(item)
                 except dblite.DuplicateItem:
-		            raise DropItem("Duplicate item found: %s" % item)
+                    raise DropItem("Duplicate item found: %s" % item)
             else:
                 raise DropItem("Unknown item type, %s" % type(item))
             return item
