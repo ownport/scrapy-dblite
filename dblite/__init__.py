@@ -164,11 +164,18 @@ class Storage(object):
     def _put_one(self, item):
         ''' store one item in database
         '''
-        # prepare SQL
-        fieldnames = ','.join([f for f in item if f != '_id'])
-        fieldnames_template = ','.join(['?' for f in item if f != '_id'])
         values = [v for k, v in item.items() if k != '_id']
-        SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fieldnames_template)
+
+        # check if Item is new => update it
+        if '_id' in item:
+            fieldnames = ','.join(['%s=?' % f for f in item if f != '_id'])
+            values.append(item['_id'])
+            SQL = 'UPDATE %s SET %s WHERE rowid=?;' % (self._table, fieldnames)
+        # new Item
+        else:
+            fieldnames = ','.join([f for f in item if f != '_id'])
+            fieldnames_template = ','.join(['?' for f in item if f != '_id'])
+            SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fieldnames_template)
         try:
             self._cursor.execute(SQL, values)
         except sqlite3.OperationalError, err:
@@ -188,6 +195,9 @@ class Storage(object):
         
         _all = True - delete all items
         '''
+        if isinstance(criteria, self._item_class):
+            criteria = {'_id': criteria['_id']}
+
         SQL = 'DELETE FROM %s' % self._table
         WHERE = WhereBuilder().parse(criteria)
         if WHERE:

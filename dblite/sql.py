@@ -34,10 +34,14 @@ class WhereBuilder(object):
         result = ''
         
         for k in params.keys():
+            
             if k in LOGICAL_OPERATORS:
                 result = ' '.join((result, self._logical(k, params[k])))
             else:
-                result = ' '.join((result, "%s=%s" % (k, self._value_wrapper(params[k]) )))
+                if k == '_id':
+                    result = ' '.join((result, "rowid=%s" % (self._value_wrapper(params[k]) )))
+                else:
+                    result = ' '.join((result, "%s=%s" % (k, self._value_wrapper(params[k]) )))
             
         return result.strip()
                 

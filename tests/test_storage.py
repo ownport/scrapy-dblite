@@ -114,6 +114,26 @@ class DBLiteTest(unittest.TestCase):
         
         ds.close()
 
+    def test_update_item(self):
+        ''' test_update_item
+        '''
+        db = 'tests/db/update_item.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri, autocommit=True)
+        product = Product({'name': 'old product'})
+        ds.put(product)        
+        self.assertEqual(len([p for p in ds.get({'name': 'old product'})]), 1)
+
+        for p in ds.get():
+            p['name'] = 'new product'
+            ds.put(p)
+        self.assertEqual(len([p for p in ds.get({'name': 'old product'})]), 0)
+        self.assertEqual(len([p for p in ds.get({'name': 'new product'})]), 1)
+
+        ds.close()
+
     def test_put_many(self):
         ''' test put many dicts to database
         '''
@@ -192,13 +212,34 @@ class DBLiteTest(unittest.TestCase):
         ''' test conditional delete
         '''
         db = 'tests/db/cond-delete.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri, autocommit=True)
+
+        # delete by name
         ds.put(Product({'name': 'product_name'}))
         self.assertEqual(len(ds), 1)
         ds.delete({'name': 'product_name'})      
         self.assertEqual(len(ds), 0)
         ds.commit()
+        
+        # delete by _id
+        ds.put(Product({'name': 'product_name'}))
+        self.assertEqual(len(ds), 1)
+        for p in ds.get():
+            ds.delete({'_id': p['_id']})      
+        self.assertEqual(len(ds), 0)
+        ds.commit()
+
+        # delete by Item
+        ds.put(Product({'name': 'product_name'}))
+        self.assertEqual(len(ds), 1)
+        for p in ds.get():
+            ds.delete(p)      
+        self.assertEqual(len(ds), 0)
+        ds.commit()
+
         ds.close()          
 
     def test_wrong_delete(self):
