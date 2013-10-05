@@ -1,18 +1,17 @@
 scrapy-dblite
 =============
 
-Simple library for storing `Scrapy Items <http://doc.scrapy.org/en/latest/topics/items.html>`_ in sqlite. There's no special requirements or dependencies for using this library but main goal of dblite is working together with [Scrapy](http://scrapy.org/) - a fast high-level screen scraping and web crawling framework, used to crawl websites and extract structured data from their pages.
+Simple library for storing `Scrapy Items <http://doc.scrapy.org/en/latest/topics/items.html>`_ in sqlite. There's no special requirements or dependencies for using this library but main goal of dblite is working together with `Scrapy <http://scrapy.org/>`_ - a fast high-level screen scraping and web crawling framework, used to crawl websites and extract structured data from their pages.
 
-According to [Scrapy documentation](http://doc.scrapy.org/en/latest/) Item objects are simple containers used to collect the scraped data. They provide a dictionary-like API with a convenient syntax for declaring their available fields.
+According to `Scrapy documentation <http://doc.scrapy.org/en/latest/>`_ Item objects are simple containers used to collect the scraped data. They provide a dictionary-like API with a convenient syntax for declaring their available fields.
 
-```python
-from scrapy.item import Item, Field
+.. code-block:: python
+	from scrapy.item import Item, Field
 
-class Product(Item):
-    _id 	= Field()
-    name 	= Field()
-    price 	= Field()
-```
+	class Product(Item):
+	    _id 	= Field()
+	    name 	= Field()
+	    price 	= Field()
 
 For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html). Item and Field classes also included in dblite library but there's no need to use them. It's just simplifed version of Scrapy's classes. 
 
