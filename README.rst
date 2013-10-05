@@ -45,8 +45,14 @@ More detail information about dblite can be founded in `docs/dblite-api <https:/
 Installation
 ------------
 
+To install scrapy-dblite directly from github::
+	
+	pip install git+https://github.com/ownport/scrapy-dblite.git
 
+or install from `PyPI - the Python Package Index <https://pypi.python.org/pypi>`_::
 
+	pip install scrapy-dblite
+	
 How to use scrapy-dblite with Scrapy
 ------------------------------------
 ::
