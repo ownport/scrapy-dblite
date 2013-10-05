@@ -10,7 +10,7 @@ setup_args = {
     'maintainer': dblite.__author__,
     'maintainer_email': dblite.__author__,
     'license': 'BSD',
-    'packages': 'dblite',
+    'packages': ['dblite', ],
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
