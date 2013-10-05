@@ -92,8 +92,10 @@ By using `$or` operator, you can select items with logical OR conjunction
 >>> [p for p in ds.get({'$or': [{'price': 100}, {'price': 1000}]})]
 [{'_id': 1, 'name': u'Laptop', 'price': 1000},
 {'_id': 2, 'name': u'Nettop', 'price': 100}] 
-```
 >>> [p for p in ds.get({'$or': [{'name': 'Laptop'}, {'name': 'Desktop PC'}]})]
+[{'_id': 1, 'name': u'Laptop', 'price': 1000}, 
+{'_id': 3, 'name': u'Desktop PC', 'price': 500}]
+```
 
 ### Delete items
 
