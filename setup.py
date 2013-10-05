@@ -5,7 +5,7 @@ setup_args = {
     'version': dblite.__version__,
     'url': 'https://github.com/ownport/scrapy-dblite',
     'description': 'Simple library for storing Scrapy Items in sqlite database',
-    'long_description': open('README.md').read(),
+    'long_description': open('README.rst').read(),
     'author': dblite.__author__,
     'maintainer': dblite.__author__,
     'maintainer_email': dblite.__author__,
