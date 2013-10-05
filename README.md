@@ -14,7 +14,7 @@ class Product(Item):
     price 	= Field()
 ```
 
-For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html). There's no need to use Item and Field classes provided by dblite library. It's just simplifed version of Scrapy's classes. The `_id` field is required to be defined for Item(). 
+For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html). There's no need to use Item and Field classes provided by dblite library. It's just simplifed version of Scrapy's classes. The `_id` field is required to be defined for Item(). Most probably you will never use this directly but dblite is used for own logic: `_id` equals `rowid` in sqlite database.
 
 ## Working with storage
 
@@ -38,10 +38,21 @@ All manipulations with Items are performed via 3 methods: get(), put(), delete()
 >>> ds.put(p1)
 >>> [product for product in ds.get()]
 [{'_id': 1, 'name': u'Laptop', 'price': 1000}]
->>> ds.delete({'_id': 1})
+>>> ds.delete(p1)
 >>> [i for i in ds.get()]
 []
 >>>
+```
+## Storing Items in sqlite
+
+```python
+>>> p1 = Product(name='Laptop', price=1000)
+>>> p2 = Product(name='Nettop', price=100)
+>>> p3 = Product(name='Desktop PC', price=500)
+>>> ds.put(p1)
+>>> ds.put([p2,p3])
+>>> [p for p in ds.get()]
+[{'_id': 1, 'name': u'Laptop', 'price': 1000}, {'_id': 2, 'name': u'Nettop', 'price': 100}, {'_id': 3, 'name': u'Desktop PC', 'price': 500}]
 ```
 
 ## Similar projects
