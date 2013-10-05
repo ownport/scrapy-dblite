@@ -9,12 +9,12 @@ According to Scrapy documentation Item objects are simple containers used to col
 from scrapy.item import Item, Field
 
 class Product(Item):
-	_id 	= Field()
+    _id 	= Field()
     name 	= Field()
     price 	= Field()
 ```
 
-For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html)
+For more information about Scrapy Items please read [documentation](http://doc.scrapy.org/en/latest/topics/items.html). There's no need to use Item and Field classes provided by dblite library. It's just simplifed version of Scrapy's classes. The `_id` field is required to be defined for Item(). 
 
 ## Working with storage
 
@@ -26,7 +26,7 @@ The simplest way to open sqlite database for storing Scrapy items is use `open()
 >>> ds
 <dblite.Storage object at 0x17e1f10>
 >>> ds.fieldnames
-set(['price', 'name'])
+set(['price', '_id', 'name'])
 ```
 
 All manipulations with Items are performed via 3 methods: get(), put(), delete()
@@ -36,9 +36,9 @@ All manipulations with Items are performed via 3 methods: get(), put(), delete()
 >>> p1
 {'name': 'Laptop', 'price': 1000}
 >>> ds.put(p1)
->>> [i for i in ds.get()]
-[(1, {'name': u'Laptop', 'price': 1000})]
->>> ds.delete({'rowid':1})
+>>> [product for product in ds.get()]
+[{'_id': 1, 'name': u'Laptop', 'price': 1000}]
+>>> ds.delete({'_id': 1})
 >>> [i for i in ds.get()]
 []
 >>>
