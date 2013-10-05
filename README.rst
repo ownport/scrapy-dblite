@@ -40,7 +40,12 @@ All manipulations with Items are performed via 3 methods: get(), put(), delete()
 	[]
 	>>>
 
-More detail information about dblite can be founded in [docs/dblite-api](https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md) document
+More detail information about dblite can be founded in `docs/dblite-api <https://github.com/ownport/scrapy-dblite/blob/master/docs/dblite-api.md>`_ document
+
+Installation
+------------
+
+
 
 How to use scrapy-dblite with Scrapy
 ------------------------------------
