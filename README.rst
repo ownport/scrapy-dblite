@@ -16,6 +16,8 @@ For more information about Scrapy Items please read `documentation <http://doc.s
 
 The *_id* field is required to be defined for Item(). Most probably you will never use this directly but dblite is used for own logic: *_id* equals *rowid* in sqlite database.
 
+Item & Field classes defintions in dblite described in `Items specification <https://github.com/ownport/scrapy-dblite/blob/master/docs/items.md>` 
+
 Working with storage
 --------------------
 The simplest way to open sqlite database for storing Scrapy items is use *open()*::
@@ -63,7 +65,7 @@ Using dblite in Item Pipeline::
 
     class StoreItemsPipeline(object):
         def __init__(self):
-            self.ds = open(Product, 'sqlite://db/products.sqlite:items')
+            self.ds = open(Product, 'sqlite://db/products.sqlite:items', autocommit=True)
 
         def process_item(self, item, spider):	        
             if isinstance(item, Product):
