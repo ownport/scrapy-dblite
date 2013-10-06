@@ -9,6 +9,7 @@ class Product(Item):
     _id = Field()
     name = Field()
     price = Field()
+    catelog_url = Field()
 ```
 
 Item Fields
@@ -20,9 +21,25 @@ Item Field definitions in dblite
 Let's review how Items and Fields classes mapped to sqlite scheme. For above example with Product class, dblite will create the next table:
 
 ```sql
-CREATE TABLE IF NOT EXISTS <table name> (name, price);
+CREATE TABLE IF NOT EXISTS table_name (name, price, catalog_url);
 ```
 The value of `table name` will be taken from uri parameter.
 
 Unlike most SQL databases, SQLite does not restrict the type of data that may be inserted into a column based on the columns declared type. Instead, SQLite uses dynamic typing. That's a reason why there's no need to define type of the fields.
 
+To ge more flexibilty, you can define paremeter `dblite` for Field() where you can specify sqlite column definition and dblite will add it during table creation
+
+```python
+class Product(Item):
+    _id = Field()
+    name = Field(dblite='text')
+    price = Field(dblite='integer')
+    catalog_url = Field(dblite='text unique')
+```
+SQL for table creation will be 
+```sql
+CREATE TABLE IF NOT EXISTS table_name (
+    name text, 
+    price integer, 
+    catalog_url text unique);
+```
