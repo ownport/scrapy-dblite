@@ -90,3 +90,9 @@ or conditions the same as for selecting items
 []
 >>>
 ```
+
+or you can delete all items by
+```python
+>>> ds.delete(_all=True)
+>>>
+```
