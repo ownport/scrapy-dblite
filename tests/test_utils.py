@@ -18,14 +18,22 @@ class DBLiteTest(unittest.TestCase):
     def test_open_incorrect_uri(self):
         ''' test_open_incorrect_uri
         '''
-        self.assertRaises(RuntimeError, dblite.open, Product, 'sqlite:/tests:test')
-        self.assertRaises(RuntimeError, dblite.open, Product, 'sqlit://tests:test')
+        self.assertRaises(RuntimeError, 
+                dblite.open, Product, 
+                'sqlite:/tests/db/test:test')
+        self.assertRaises(RuntimeError, 
+                dblite.open, Product, 
+                'sqlit://tests/db/test:test')
 
     def test_attempts_to_open_database(self):
         ''' test_attempts_to_open_database
         '''
-        self.assertRaises(RuntimeError, dblite.open, Product, 'sqlite://tests:test')
-        self.assertRaises(RuntimeError, dblite.open, Product, 'sqlite://tests:test', object)
+        self.assertRaises(RuntimeError, 
+                dblite.open, Product, 
+                'sqlite://tests:test')
+        self.assertRaises(RuntimeError, 
+                dblite.open, Product, 
+                'sqlite://tests:test', object)
 
     def test_open_storage(self):
         ''' test open storage
