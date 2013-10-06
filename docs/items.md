@@ -43,3 +43,4 @@ CREATE TABLE IF NOT EXISTS table_name (
     price integer, 
     catalog_url text unique);
 ```
+To get more information about sqlite column definition please read [Datatypes In SQLite Version 3](http://www.sqlite.org/datatype3.html)
