@@ -17,6 +17,10 @@ from urlparse import urlparse
 SUPPORTED_BACKENDS = ['sqlite',]
 
 
+class DuplicateItem(Exception):
+    pass
+
+
 def open(item, uri, autocommit=False):
     ''' open sqlite database by uri and Item class
     '''
