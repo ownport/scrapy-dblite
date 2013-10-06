@@ -21,9 +21,9 @@ class DBLiteTest(unittest.TestCase):
         '''
         uri = URI_TEMPLATE.format('', 'product')
         self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
-        uri = URI_TEMPLATE.format('product', '')
+        uri = URI_TEMPLATE.format('tests/db/product', '')
         self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
-        uri = URI_TEMPLATE.format('product', '##')
+        uri = URI_TEMPLATE.format('tests/db/product', '##')
         self.assertRaises(RuntimeError, dblite.Storage, Product, uri)
 
     def test_create_db_wrong_path(self):
