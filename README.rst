@@ -16,7 +16,7 @@ For more information about Scrapy Items please read `documentation <http://doc.s
 
 The *_id* field is required to be defined for Item(). Most probably you will never use this directly but dblite is used for own logic: *_id* equals *rowid* in sqlite database.
 
-Item & Field classes defintions in dblite described in `Items specification <https://github.com/ownport/scrapy-dblite/blob/master/docs/items.md>` 
+Item & Field classes defintions in dblite described in `Items specification <https://github.com/ownport/scrapy-dblite/blob/master/docs/items.md>`_ 
 
 Working with storage
 --------------------
