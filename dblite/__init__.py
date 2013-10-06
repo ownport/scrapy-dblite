@@ -43,7 +43,8 @@ class Storage(object):
                      [integer] - autocommit after N[integer] put()
         '''
         self._item_class = item
-        self._fieldnames = None
+        self._fields = dict()
+        #self._fieldnames = None
 
         database, table = self.parse_uri(uri)
         # database file
@@ -71,7 +72,7 @@ class Storage(object):
         # commit counter increased every time after put without commit()
         self._commit_counter = 0 
 
-        self._create_table(self._table, self.fieldnames)
+        self._create_table(self._table)
 
     @staticmethod
     def _dict_factory(cursor, row):
@@ -102,22 +103,30 @@ class Storage(object):
     def fieldnames(self):
         ''' return fieldnames
         '''
-        if not self._fieldnames:
+        if not self._fields:
             if self._item_class is not None:
-                fields = [m[1] for m in inspect.getmembers(self._item_class) if m[0] == 'fields']
-                if len(fields) != 1:
+                for m in inspect.getmembers(self._item_class):
+                    if m[0] == 'fields' and isinstance(m[1], dict):
+                        self._fields = m[1]
+                if not self._fields:
                     raise RuntimeError('Unknown item type, no fields: %s' % self._item_class)
-                self._fieldnames = set(fields[0].keys())
             else:
                 raise RuntimeError('Item class is not defined, %s' % self._item_class)
-        return self._fieldnames
+        return self._fields.keys()
 
-    def _create_table(self, table_name, fieldnames):
+    def _create_table(self, table_name):
         ''' create sqlite's table for storing simple dictionaries
         '''
-        if not fieldnames:
-            raise RuntimeError('Item fieldnames are not defined')
-        sql_fields = ','.join([f for f in fieldnames if f != '_id'])
+        if not self.fieldnames:
+            raise RuntimeError('Item fields are not defined')
+        sql_fields = []
+        for field in self._fields:
+            if field != '_id':
+                if 'dblite' in self._fields[field]:
+                    sql_fields.append(' '.join([field, self._fields[field]['dblite']]))
+                else:
+                    sql_fields.append(field)
+        sql_fields = ','.join(sql_fields)
         SQL = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (table_name, sql_fields)
         try:
             self._cursor.execute(SQL)

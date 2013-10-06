@@ -9,9 +9,10 @@ URI_TEMPLATE = 'sqlite://{}:{}'
 
 
 class Product(Item):
-    _id     = Field()
-    name    = Field()
-    price   = Field()
+    _id = Field()
+    name = Field(dblite='text')
+    price = Field(dblite='integer')
+    catalog_url = Field(dblite='text unique')
 
 
 class DBLiteTest(unittest.TestCase):
@@ -50,7 +51,7 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/simple_db.sqlite'
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        self.assertEqual(set(ds.fieldnames), set(['_id','name','price']))
+        self.assertEqual(set(ds.fieldnames), set(['_id','name','price', 'catalog_url']))
         ds.close()
 
     def test_no_fields_in_item(self):
