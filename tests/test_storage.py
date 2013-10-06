@@ -115,6 +115,17 @@ class DBLiteTest(unittest.TestCase):
         
         ds.close()
 
+    def test_put_duplicate_item(self):
+        ''' test_put_duplicate_item
+        '''
+        db = 'tests/db/db-put-and-get.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri)
+        products = [Product({'catalog_url': 'http://catalog/1', }) for _ in range(2)]
+        self.assertRaises(dblite.DuplicateItem, ds.put, products)
+
     def test_update_item(self):
         ''' test_update_item
         '''

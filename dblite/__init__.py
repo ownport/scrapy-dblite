@@ -193,6 +193,8 @@ class Storage(object):
             self._cursor.execute(SQL, values)
         except sqlite3.OperationalError, err:
             raise RuntimeError('Item put() error, %s, SQL: %s, values: %s' % (err, SQL, values) )
+        except sqlite3.IntegrityError:
+            raise DuplicateItem('Duplicate item, %s' % item)
         self._do_autocommit()        
 
     def _put_many(self, items):
