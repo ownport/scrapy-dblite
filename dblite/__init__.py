@@ -117,21 +117,20 @@ class Storage(object):
     def _create_table(self, table_name):
         ''' create sqlite's table for storing simple dictionaries
         '''
-        if not self.fieldnames:
-            raise RuntimeError('Item fields are not defined')
-        sql_fields = []
-        for field in self._fields:
-            if field != '_id':
-                if 'dblite' in self._fields[field]:
-                    sql_fields.append(' '.join([field, self._fields[field]['dblite']]))
-                else:
-                    sql_fields.append(field)
-        sql_fields = ','.join(sql_fields)
-        SQL = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (table_name, sql_fields)
-        try:
-            self._cursor.execute(SQL)
-        except sqlite3.OperationalError, err:
-            raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
+        if self.fieldnames:
+            sql_fields = []
+            for field in self._fields:
+                if field != '_id':
+                    if 'dblite' in self._fields[field]:
+                        sql_fields.append(' '.join([field, self._fields[field]['dblite']]))
+                    else:
+                        sql_fields.append(field)
+            sql_fields = ','.join(sql_fields)
+            SQL = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (table_name, sql_fields)
+            try:
+                self._cursor.execute(SQL)
+            except sqlite3.OperationalError, err:
+                raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
     def get(self, criteria=None):
         ''' returns dicts selected by criteria
