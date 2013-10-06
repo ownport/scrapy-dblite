@@ -11,6 +11,23 @@
 {'_id': 3, 'name': u'Desktop PC', 'price': 500}]
 ```
 
+### Update items 
+
+dblite supports updating items but for that you need to know `_id` of item
+```python
+>>> p1 = Product(name='Leptop', price=1000)
+>>> ds.put(p1)
+>>> [p for p in ds.get()]
+[{'_id': 1, 'name': u'Leptop', 'price': 1000}]
+>>> for p in ds.get({'name': 'Leptop'}):
+...		p['name'] = 'Laptop'
+...     ds.put(p)
+...
+>>> [p for p in ds.get()]
+[{'_id': 1, 'name': u'Laptop', 'price': 1000}]
+>>> 
+```
+
 ### Select Items
 Select all items from sqlite
 ```python
