@@ -42,7 +42,7 @@ class DBLiteTest(unittest.TestCase):
 
         ds = dblite.open(Product, uri)
         ds.put(Product({'name': 'product_name', 'price': 100}))
-        self.assertEqual(len([d for d in ds.get()]), 1)
+        self.assertTrue(isinstance(ds.get(limit=1), Product))
         ds.close()
 
 if __name__ == "__main__":

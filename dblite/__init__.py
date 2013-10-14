@@ -136,15 +136,17 @@ class Storage(object):
             except sqlite3.OperationalError, err:
                 raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
-    def get(self, criteria=None):
+    def get(self, criteria=None, limit=None):
         ''' returns items selected by criteria
         
         If the criteria is not defined, get() returns all items.
         '''
-        if criteria is None:
+        if criteria is None and limit is None:
             return self._get_all()
+        elif limit is not None and limit == 1:
+            return self._get_one(criteria)
         else:
-            return self._get_with_criteria(criteria)
+            return self._get_with_criteria(criteria, limit)
 
     def _get_all(self):
         ''' return all items
@@ -160,13 +162,16 @@ class Storage(object):
                 rowid = item['_id']
                 yield self._item_class(item)
 
-    def _get_with_criteria(self, criteria):
+    def _get_with_criteria(self, criteria, limit=None):
         ''' returns items selected by criteria
         ''' 
         SQL = "SELECT rowid,* FROM %s" % self._table
         WHERE = WhereBuilder().parse(criteria)
         if WHERE:
-            SQL = ' '.join((SQL, 'WHERE', WHERE, ';'))
+            SQL = ' '.join((SQL, 'WHERE', WHERE))
+        
+        if limit is not None and isinstance(limit, int):
+            SQL = ' '.join((SQL, 'LIMIT %s' % limit, ';'))
         else:
             SQL = ''.join((SQL, ';'))
 
@@ -174,6 +179,14 @@ class Storage(object):
         for item in self._cursor.fetchall():
             yield self._item_class(item)
 
+    def _get_one(self, criteria):
+        ''' return one item
+        '''
+        try:
+            items = [item for item in self._get_with_criteria(criteria, limit=1)]
+            return items[0]
+        except:
+            return None
 
     def _do_autocommit(self):
         ''' perform autocommit

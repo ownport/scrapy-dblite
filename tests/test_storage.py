@@ -220,6 +220,37 @@ class DBLiteTest(unittest.TestCase):
         res = [d for d in ds.get({'$and': {'name': 'product#2', 'price': 102}})]       
         self.assertEqual(len(res), 1)
 
+    def test_limited_get(self):
+        ''' test_limited_get
+        '''
+        db = 'tests/db/limited-get.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri, autocommit=True)
+
+        all_items = [Product({'name': 'product#%s' % i, 'price': i+100}) for i in range(10)]
+        ds.put(all_items)
+
+        self.assertEqual(len(all_items), 10)     
+        self.assertEqual(sum([1 for _ in ds.get(limit=5)]), 5)
+
+        ds.close()
+
+    def test_non_exists_item(self):
+        ''' test_non_exists_item
+        '''
+        db = 'tests/db/limited-get.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri, autocommit=True)
+
+        ds.put(Product({'name': 'product', 'price': 100}))
+        self.assertIsNone(ds.get({'name': 'Product'}, limit=1))
+
+        ds.close()
+
     def test_conditional_delete(self):
         ''' test conditional delete
         '''
