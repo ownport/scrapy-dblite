@@ -4,7 +4,7 @@
 #   simple library for stroring python dictionaries in sqlite database
 #
 __author__ = 'Andrey Usov <https://github.com/ownport/scrapy-dblite>'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 import os
 import inspect
@@ -14,8 +14,12 @@ from dblite.sql import WhereBuilder
 from urlparse import urlparse
 
 
+# the list of supported backends
 SUPPORTED_BACKENDS = ['sqlite',]
 
+# how many items will be returned by one SQL request. 
+# Used in Storage()._get_all()
+ITEMS_PER_REQUEST = 1000
 
 class DuplicateItem(Exception):
     pass
@@ -133,10 +137,32 @@ class Storage(object):
                 raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
     def get(self, criteria=None):
-        ''' returns dicts selected by criteria
+        ''' returns items selected by criteria
         
-        If the criteria is not defined, get() returns all documents.
+        If the criteria is not defined, get() returns all items.
         '''
+        if criteria is None:
+            return self._get_all()
+        else:
+            return self._get_with_criteria(criteria)
+
+    def _get_all(self):
+        ''' return all items
+        '''
+        rowid = 0
+        while True:
+            SQL_SELECT_MANY = 'SELECT rowid, * FROM %s WHERE rowid > ? LIMIT ?;' % self._table
+            self._cursor.execute(SQL_SELECT_MANY, (rowid, ITEMS_PER_REQUEST))
+            items = self._cursor.fetchall()
+            if len(items) == 0:
+                break
+            for item in items:
+                rowid = item['_id']
+                yield self._item_class(item)
+
+    def _get_with_criteria(self, criteria):
+        ''' returns items selected by criteria
+        ''' 
         SQL = "SELECT rowid,* FROM %s" % self._table
         WHERE = WhereBuilder().parse(criteria)
         if WHERE:
@@ -147,7 +173,8 @@ class Storage(object):
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
             yield self._item_class(item)
-        
+
+
     def _do_autocommit(self):
         ''' perform autocommit
         '''
