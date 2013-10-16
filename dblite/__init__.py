@@ -189,7 +189,6 @@ class Storage(object):
         else:
             SQL = ''.join((SQL, ';'))
 
-        print SQL
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
             yield self._item_class(item)
