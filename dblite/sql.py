@@ -1,6 +1,10 @@
 # SQL builder
 #
 # idea was taken from http://docs.mongodb.org/manual/reference/operator/nav-query/
+import re
+
+RE_LIKE = re.compile(r'^/(.+)/$')
+RE_REGEXP = re.compile(r'^r/(.+)/$')
 
 '''
 SUPPORTED_OPERATORS = (
@@ -39,9 +43,9 @@ class WhereBuilder(object):
                 result.append(self._logical(k, params[k]))
             else:
                 if k == '_id':
-                    result.append("rowid=%s" % (self._value_wrapper(params[k])))
+                    result.append("rowid%s" % (self._value_wrapper(params[k])))
                 else:
-                    result.append("%s=%s" % (k, self._value_wrapper(params[k])))
+                    result.append("%s%s" % (k, self._value_wrapper(params[k])))
             
         return ' AND '.join(result).strip()
                 
@@ -70,9 +74,17 @@ class WhereBuilder(object):
     def _value_wrapper(self, value):
         ''' wrapper for values 
         '''
-        if isinstance(value, (int, float, )):
-            return value
+        if isinstance(value, (int, float,)):
+            return '=%s' % value
         elif isinstance(value, (str, unicode)):
-            return '"%s"' % value
+            value = value.strip()
+            # LIKE
+            if RE_LIKE.match(value):
+                return ' LIKE "%s"' % RE_LIKE.match(value).groups()
+            # REGEXP
+            elif RE_REGEXP.match(value):
+                return ' REGEXP "%s"' % RE_REGEXP.search(value).groups()
+            else:            
+                return '="%s"' % value
 
             

@@ -64,6 +64,16 @@ class WhereBuilderTest(unittest.TestCase):
             builder._logical, '$and', 1, 
         )
 
+    def test_like_syntax(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(builder.parse({'f1': '/search pattern/'}), 'f1 LIKE "search pattern"',)
+
+    def test_regexp_syntax(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(builder.parse({'f1': 'r/search pattern/'}), 'f1 REGEXP "search pattern"',)
+
 
 if __name__ == "__main__":
     unittest.main()  

@@ -311,6 +311,43 @@ class DBLiteTest(unittest.TestCase):
         self.assertIsNone(ds.sql('DELETE FROM product WHERE name = "Laptop"'))
         self.assertEqual([p for p in ds.sql('SELECT name FROM product;')], [] )
 
+    def test_like_syntax(self):
+        ''' test_like_syntax
+        '''
+        db = 'tests/db/like-request.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri)
+        products = (
+            Product({'name': 'Laptop'}),
+            Product({'name': 'Desktop'}),
+            Product({'name': 'Nettop'})
+        )
+        ds.put(products)
+        self.assertEqual(ds.get({'name': '/ptop/'}, limit=1), None)
+        self.assertEqual(ds.get(
+                            {'name': '/%aptop%/'}, limit=1), 
+                            {'_id': 1, 'catalog_url': None, 'name': u'Laptop', 'price': None})
+        ds.close()
+
+    def test_regexp_syntax(self):
+        ''' test_regexp_syntax
+        '''
+        db = 'tests/db/regexp-request.sqlite'
+        if os.path.isfile(db):
+            os.remove(db)
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri)
+        products = (
+            Product({'name': 'Laptop'}),
+            Product({'name': 'Desktop'}),
+            Product({'name': 'Nettop'})
+        )
+        ds.put(products)
+        self.assertEqual(ds.get({'name': 'r/ptop/'}, limit=1), None)
+        ds.close()
+
 
 if __name__ == "__main__":
     unittest.main()        
