@@ -7,8 +7,9 @@ setup_args = {
     'description': 'Simple library for storing Scrapy Items in sqlite database',
     'long_description': open('README.rst').read(),
     'author': dblite.__author__,
+    'author_email': 'ownport@gmail.com',
     'maintainer': dblite.__author__,
-    'maintainer_email': dblite.__author__,
+    'maintainer_email': 'ownport@gmail.com',
     'license': 'BSD',
     'packages': ['dblite', ],
     'classifiers': [
