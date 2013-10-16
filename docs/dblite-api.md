@@ -96,3 +96,16 @@ or you can delete all items by
 >>> ds.delete(_all=True)
 >>>
 ```
+
+### Direct SQL requests
+
+Many of operations with data is not supported via dblite API at this moment but you can use `sql()` method for direct SQL requests to database. For all SELECT requests dblite will try to rerurn the result as list of Item objects
+
+```python
+>>> ds.sql('INSERT INTO product (name, price, catalog_url) VALUES (?,?,?)', ('Laptop', 1000, 'http://catalog/1'))
+>>> [p for p in ds.sql('SELECT rowid, * FROM product;')]
+[{'_id':1, 
+  'name': 'Laptop', 
+  'price': 1000, 
+  'catalog_url': 'http://catalog/1'}]
+```
