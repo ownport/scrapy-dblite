@@ -292,7 +292,25 @@ class DBLiteTest(unittest.TestCase):
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
         self.assertRaises(RuntimeError, ds.delete, )
-        
+
+    def test_sql(self):
+        ''' test_sql
+        '''
+        db = 'tests/db/sql.sqlite'
+        uri = URI_TEMPLATE.format(db, 'product')
+        ds = dblite.Storage(Product, uri)
+        self.assertIsNone(ds.sql('INSERT INTO product (name, price, catalog_url) VALUES (?, ?, ?);', 
+                                ('Laptop', 100, 'http://catalog/1')))
+        self.assertRaises(dblite.DuplicateItem, 
+                            ds.sql, 'INSERT INTO product (name, price, catalog_url) VALUES (?, ?, ?);', 
+                            ('Laptop', 100, 'http://catalog/1'))
+        self.assertRaises(dblite.SQLError,
+                            ds.sql, 'SELECT rowid, * FROM p;')
+        self.assertEqual([p for p in ds.sql('SELECT name FROM product;')], 
+                        [Product({'name': 'Laptop'}),] )
+        self.assertIsNone(ds.sql('DELETE FROM product WHERE name = "Laptop"'))
+        self.assertEqual([p for p in ds.sql('SELECT name FROM product;')], [] )
+
 
 if __name__ == "__main__":
     unittest.main()        

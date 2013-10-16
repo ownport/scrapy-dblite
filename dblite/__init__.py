@@ -24,6 +24,8 @@ ITEMS_PER_REQUEST = 1000
 class DuplicateItem(Exception):
     pass
 
+class SQLError(Exception):
+    pass
 
 def open(item, uri, autocommit=False):
     ''' open sqlite database by uri and Item class
@@ -244,6 +246,26 @@ class Storage(object):
             if not isinstance(item, self._item_class):
                 raise RuntimeError('Items mismatch for %s and %s' % (self._item_class, type(item)))
             self.put(item)
+
+    def sql(self, sql, params=()):
+        ''' execute sql request and return items
+        '''
+        def _items(items):
+            for item in items:
+                yield self._item_class(item)        
+
+        sql = sql.strip()
+        try:
+            self._cursor.execute(sql, params)
+        except sqlite3.OperationalError, err:
+            raise SQLError('%s, SQL: %s, params: %s' % (err, sql, params) )
+        except sqlite3.IntegrityError:
+            raise DuplicateItem('Duplicate item, %s' % item)
+
+        if sql.upper().startswith('SELECT'):
+            return _items(self._cursor.fetchall())
+        else:
+            return None
 
     def delete(self, criteria=None, _all=False):
         ''' delete dictionary(ies) in sqlite database
