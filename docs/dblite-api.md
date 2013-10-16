@@ -85,6 +85,28 @@ In case when you need to get details just for one item, get(limit=1) returns Ite
 {'_id': 1, 'name': u'Laptop', 'price': 1000}
 ```
 
+dblite support LIKE and REGEXP syntax for selection items
+
+#### LIKE
+```python
+ds.get( 'product_name': '/%book%/' )
+```
+is equivalent for SQL 
+```sql
+SELECT rowid, * FROM products WHERE product_name LIKE '%book%'; 
+```
+
+#### REGEXP
+```python
+ds.get( 'product_id': 'r/code-\d+/' )
+```
+is equivalent for SQL 
+```sql
+SELECT rowid, * FROM products WHERE product_id REGEXP 'code-\d+'; 
+```
+
+The REGEXP operator is a special syntax for the _regexp() user function. 
+
 ### Delete items
 For deleting items you can specify as argument Item object 
 ```python
