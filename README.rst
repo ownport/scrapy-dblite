@@ -55,6 +55,10 @@ or install from `PyPI - the Python Package Index <https://pypi.python.org/pypi>`
 
 	pip install scrapy-dblite
 
+Change log
+----------
+Change log for dblite is based on `GitHub Milestones <https://github.com/ownport/scrapy-dblite/issues/milestones>`_
+
 How to use scrapy-dblite with Scrapy
 ------------------------------------
 Using dblite in Item Pipeline::
