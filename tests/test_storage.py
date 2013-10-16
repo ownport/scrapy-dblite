@@ -345,7 +345,10 @@ class DBLiteTest(unittest.TestCase):
             Product({'name': 'Nettop'})
         )
         ds.put(products)
-        self.assertEqual(ds.get({'name': 'r/ptop/'}, limit=1), None)
+        self.assertEqual(
+            [p for p in ds.get({'name': 'r/[Lap|Desk]top/'})],
+            [{'_id': 1, 'catalog_url': None, 'name': u'Laptop', 'price': None}, 
+            {'_id': 2, 'catalog_url': None, 'name': u'Desktop', 'price': None}])
         ds.close()
 
 

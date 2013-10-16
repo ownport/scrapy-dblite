@@ -7,6 +7,7 @@ __author__ = 'Andrey Usov <https://github.com/ownport/scrapy-dblite>'
 __version__ = '0.2.1'
 
 import os
+import re
 import inspect
 import sqlite3
 
@@ -21,16 +22,26 @@ SUPPORTED_BACKENDS = ['sqlite',]
 # Used in Storage()._get_all()
 ITEMS_PER_REQUEST = 1000
 
+
 class DuplicateItem(Exception):
     pass
 
+
 class SQLError(Exception):
     pass
+
 
 def open(item, uri, autocommit=False):
     ''' open sqlite database by uri and Item class
     '''
     return Storage(item, uri, autocommit)
+
+
+def _regexp(expr, item):
+    ''' REGEXP function for Sqlite
+    '''
+    reg = re.compile(expr)
+    return reg.search(item) is not None
 
 
 class Storage(object):
@@ -70,6 +81,7 @@ class Storage(object):
         except sqlite3.OperationalError, err:
             raise RuntimeError("%s, database: %s" % (err, database))
         self._conn.row_factory = self._dict_factory
+        self._conn.create_function("REGEXP", 2, _regexp)
 
         # sqlite cursor
         self._cursor = self._conn.cursor()
@@ -177,6 +189,7 @@ class Storage(object):
         else:
             SQL = ''.join((SQL, ';'))
 
+        print SQL
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
             yield self._item_class(item)
