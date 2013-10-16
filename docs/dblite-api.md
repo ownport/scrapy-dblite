@@ -67,6 +67,24 @@ By using `$or` operator, you can select items with logical OR conjunction
 {'_id': 3, 'name': u'Desktop PC', 'price': 500}]
 ```
 
+Time to time there's no need to get all results. You can limit the amount of items returned by get() with `limit` parameter:
+```python
+>>> for product in products.get(limit=5):
+...		print product
+...
+[{'_id': 1, 'name': u'Laptop', 'price': 1000}, 
+{'_id': 2, 'name': u'Nettop', 'price': 100}, 
+{'_id': 3, 'name': u'Desktop PC', 'price': 500},
+{'_id': 4, 'name': u'Tablet', 'price': 300},
+{'_id': 5, 'name': u'Smartphone', 'price': 200}]
+```
+
+In case when you need to get details just for one item, get(limit=1) returns Item object but not the list
+```python
+>>> ds.get(limit=1)
+{'_id': 1, 'name': u'Laptop', 'price': 1000}
+```
+
 ### Delete items
 For deleting items you can specify as argument Item object 
 ```python
