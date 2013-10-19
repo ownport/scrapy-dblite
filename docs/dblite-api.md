@@ -107,6 +107,15 @@ SELECT rowid, * FROM products WHERE product_id REGEXP 'code-\d+';
 
 The REGEXP operator is a special syntax for the _regexp() user function. 
 
+#### None values
+```python
+ds.get( 'product_id': None )
+```
+is equivalent for SQL 
+```sql
+SELECT rowid, * FROM products WHERE product_id ISNULL; 
+```
+
 ### Delete items
 For deleting items you can specify as argument Item object 
 ```python

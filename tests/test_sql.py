@@ -74,6 +74,11 @@ class WhereBuilderTest(unittest.TestCase):
         builder = WhereBuilder()
         self.assertEqual(builder.parse({'f1': 'r/search pattern/'}), 'f1 REGEXP "search pattern"',)
 
+    def test_none_value(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(builder.parse({'f1': None}), 'f1 ISNULL',)
+
 
 if __name__ == "__main__":
     unittest.main()  

@@ -86,5 +86,7 @@ class WhereBuilder(object):
                 return ' REGEXP "%s"' % RE_REGEXP.search(value).groups()
             else:            
                 return '="%s"' % value
+        elif value is None:
+            return ' ISNULL'
 
             
