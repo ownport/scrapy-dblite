@@ -309,11 +309,19 @@ class Storage(object):
     def commit(self):
         ''' commit changes
         '''
-        self._conn.commit()
+        try:
+            self._conn.commit()
+        except sqlite3.ProgrammingError:
+            pass
 
     def close(self):
         ''' close database
         '''
         self._conn.close()
 
+    def __del__(self):
+        ''' handle delete Storage
+        '''
+        if getattr(self, '_autocommit', False) is True:
+            self.commit()
         
