@@ -158,3 +158,24 @@ Many of operations with data is not supported via dblite API at this moment but 
   'price': 1000, 
   'catalog_url': 'http://catalog/1'}]
 ```
+
+### copy() function
+
+copy items one database to another one (when source and target items are the same)
+```python
+source = (SourceItem, 'sqlite://data/source.sqlite:data')
+target = (TargetItem, 'sqlite://data/target.sqlite:data')
+dblite.copy(source, target)
+```
+
+copy items with transformation
+```python
+source = (SourceItem, 'sqlite://data/source.sqlite:data')
+target = (TargetItem, 'sqlite://data/target.sqlite:data')
+
+def transform(item):
+    # code for item fields transformation ... 
+    return item
+dblite.copy(source, target, transform=transform)
+```
+
