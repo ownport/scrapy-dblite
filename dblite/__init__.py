@@ -4,7 +4,7 @@
 #   simple library for stroring python dictionaries in sqlite database
 #
 __author__ = 'Andrey Usov <https://github.com/ownport/scrapy-dblite>'
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 import os
 import re
@@ -178,7 +178,7 @@ class Storage(object):
         if criteria is None and limit is None:
             return self._get_all()
         elif limit is not None and limit == 1:
-            return self._get_one(criteria)
+            return self.get_one(criteria)
         else:
             return self._get_with_criteria(criteria, limit)
 
@@ -213,7 +213,7 @@ class Storage(object):
         for item in self._cursor.fetchall():
             yield self._item_class(item)
 
-    def _get_one(self, criteria):
+    def get_one(self, criteria):
         ''' return one item
         '''
         try:
