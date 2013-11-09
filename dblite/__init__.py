@@ -11,7 +11,7 @@ import re
 import inspect
 import sqlite3
 
-from dblite.sql import WhereBuilder
+from .sql import WhereBuilder
 from urlparse import urlparse
 
 
