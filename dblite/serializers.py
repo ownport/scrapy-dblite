@@ -63,4 +63,23 @@ class CompressedJsonSerializer(object):
         '''
         return json.loads(zlib.decompress(v))
 
+# -----------------------------------------------------------------
+# CompressedJStrSerializer class
+# -----------------------------------------------------------------
+
+class CompressedStrSerializer(object):
+    ''' CompressedStrSerializer 
+    '''
+
+    @staticmethod
+    def dumps(v):
+        ''' dumps value 
+        '''
+        return zlib.compress(v)
+
+    @staticmethod
+    def loads(v):
+        ''' loads value  
+        '''
+        return zlib.decompress(v)
 
