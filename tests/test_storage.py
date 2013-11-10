@@ -3,7 +3,7 @@ import unittest
 
 import dblite
 from dblite.item import Item, Field
-
+from dblite.serializers import CompressedStrSerializer
 
 URI_TEMPLATE = 'sqlite://{}:{}'
 
@@ -13,6 +13,7 @@ class Product(Item):
     name = Field(dblite='text')
     price = Field(dblite='integer')
     catalog_url = Field(dblite='text unique')
+    description = Field(dblite_serializer=CompressedStrSerializer)
 
 
 class DBLiteTest(unittest.TestCase):
@@ -51,7 +52,10 @@ class DBLiteTest(unittest.TestCase):
         db = 'tests/db/simple_db.sqlite'
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        self.assertEqual(set(ds.fieldnames), set(['_id','name','price', 'catalog_url']))
+        self.assertEqual(
+            set(ds.fieldnames), 
+            set(['_id','name','price', 'catalog_url', 'description'])
+        )
         ds.close()
 
     def test_no_fields_in_item(self):
@@ -99,15 +103,21 @@ class DBLiteTest(unittest.TestCase):
             os.remove(db)
         uri = URI_TEMPLATE.format(db, 'product')
         ds = dblite.Storage(Product, uri)
-        products = [Product({'name': 'product#%d' % i, 'price': i,}) for i in range(10)]
-        for p in products:
-            ds.put(p)         
+        
+        products = list()
+        for i in range(10):
+            p = Product({'name': 'product#%d' % i, 'price': i, 'description': 'product description'})
+            ds.put(p)
         ds.commit()
 
         self.assertEqual(len(ds), 10)
         
-        for product in products:
-            self.assertEqual(len([p for p in ds.get({'name': product['name']})]), 1)
+        for i in range(10):
+            self.assertEqual(
+                ds.get_one({'name': 'product#%d' % i}), 
+                {'_id': i+1, 'name': 'product#%d' % i, 'catalog_url': None, 
+                'price': i, 'description': 'product description'}
+            )
         
         ds.delete(_all=True)
         ds.commit()
@@ -328,7 +338,11 @@ class DBLiteTest(unittest.TestCase):
         self.assertEqual(ds.get({'name': '/ptop/'}, limit=1), None)
         self.assertEqual(ds.get(
                             {'name': '/%aptop%/'}, limit=1), 
-                            {'_id': 1, 'catalog_url': None, 'name': u'Laptop', 'price': None})
+                            {
+                                '_id': 1, 'catalog_url': None, 
+                                'name': u'Laptop', 'price': None, 
+                                'description': None
+                            })
         ds.close()
 
     def test_regexp_syntax(self):
@@ -347,8 +361,8 @@ class DBLiteTest(unittest.TestCase):
         ds.put(products)
         self.assertEqual(
             [p for p in ds.get({'name': 'r/[Lap|Desk]top/'})],
-            [{'_id': 1, 'catalog_url': None, 'name': u'Laptop', 'price': None}, 
-            {'_id': 2, 'catalog_url': None, 'name': u'Desktop', 'price': None}])
+            [{'_id': 1, 'catalog_url': None, 'name': u'Laptop', 'price': None, 'description': None}, 
+            {'_id': 2, 'catalog_url': None, 'name': u'Desktop', 'price': None, 'description': None}])
         ds.close()
 
 

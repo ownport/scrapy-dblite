@@ -34,6 +34,7 @@ class SerializersTest(unittest.TestCase):
         ''' test_compressed_str_serializer
         '''
         s = CompressedStrSerializer()
+        self.assertEqual(s.loads(s.dumps(None)), None)
         self.assertEqual(s.loads(s.dumps('string')), 'string')
         self.assertEqual(s.loads(s.dumps(u'unicode')), u'unicode')
 

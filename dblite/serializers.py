@@ -75,11 +75,15 @@ class CompressedStrSerializer(object):
     def dumps(v):
         ''' dumps value 
         '''
+        if v is None:
+            return None
         return zlib.compress(v)
 
     @staticmethod
     def loads(v):
         ''' loads value  
         '''
+        if v is None:
+            return None
         return zlib.decompress(v)
 

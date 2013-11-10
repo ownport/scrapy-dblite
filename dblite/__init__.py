@@ -170,6 +170,15 @@ class Storage(object):
             except sqlite3.OperationalError, err:
                 raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
+    def _make_item(self, item):
+        ''' make Item class 
+        '''
+        for field in self._item_class.fields:
+            if (field in item) and ('dblite_serializer' in self._item_class.fields[field]):
+                serializer = self._item_class.fields[field]['dblite_serializer']
+                item[field] = serializer.loads(item[field])
+        return self._item_class(item)
+
     def get(self, criteria=None, limit=None):
         ''' returns items selected by criteria
         
@@ -194,7 +203,7 @@ class Storage(object):
                 break
             for item in items:
                 rowid = item['_id']
-                yield self._item_class(item)
+                yield self._make_item(item)
 
     def _get_with_criteria(self, criteria, limit=None):
         ''' returns items selected by criteria
@@ -211,7 +220,7 @@ class Storage(object):
 
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
-            yield self._item_class(item)
+            yield self._make_item(item)
 
     def get_one(self, criteria):
         ''' return one item
@@ -251,7 +260,17 @@ class Storage(object):
     def _put_one(self, item):
         ''' store one item in database
         '''
-        values = [v for k, v in item.items() if k != '_id']
+        # prepare values
+        values = []
+        for k, v in item.items():
+            if k == '_id':
+                continue
+            if 'dblite_serializer' in item.fields[k]:
+                serializer = item.fields[k]['dblite_serializer']
+                v = serializer.dumps(v)
+                if v is not None:
+                    v = sqlite3.Binary(buffer(v))
+            values.append(v)
 
         # check if Item is new => update it
         if '_id' in item:
@@ -263,6 +282,7 @@ class Storage(object):
             fieldnames = ','.join([f for f in item if f != '_id'])
             fieldnames_template = ','.join(['?' for f in item if f != '_id'])
             SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fieldnames_template)
+            
         try:
             self._cursor.execute(SQL, values)
         except sqlite3.OperationalError, err:
@@ -277,7 +297,7 @@ class Storage(object):
         for item in items:
             if not isinstance(item, self._item_class):
                 raise RuntimeError('Items mismatch for %s and %s' % (self._item_class, type(item)))
-            self.put(item)
+            self._put_one(item)
 
     def sql(self, sql, params=()):
         ''' execute sql request and return items
