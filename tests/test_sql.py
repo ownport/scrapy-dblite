@@ -18,7 +18,7 @@ class WhereBuilderTest(unittest.TestCase):
     def test_simple_request(self):
         
         builder = WhereBuilder()
-        self.assertEqual( builder.parse({'f1': 'v1'}), 'f1="v1"' )
+        self.assertEqual( builder.parse({'f1': 'v1'}), "f1='v1'" )
 
     def test_logical_and_in_simple_form(self):
 
@@ -26,7 +26,7 @@ class WhereBuilderTest(unittest.TestCase):
         self.assertEqual(
             builder.parse(
                     {'f1': 'v1', 'f2': 'v2'}), 
-                    'f1="v1" AND f2="v2"'
+                    "f1='v1' AND f2='v2'"
         )
 
     def test_simple_request_with_logical_opers(self):
@@ -36,21 +36,33 @@ class WhereBuilderTest(unittest.TestCase):
             builder.parse({
                 '$and': {'f1': 'v1', 'f2': 'v2', 'f3': 2}
             }), 
-            '(f1="v1") AND (f2="v2") AND (f3=2)',
+            "(f1='v1') AND (f2='v2') AND (f3=2)",
         )
         self.assertEqual(
             builder.parse({
                 '$or': {'f1': 'v1', 'f2': 'v2', 'f3': 2}
             }), 
-            '(f1="v1") OR (f2="v2") OR (f3=2)',
+            "(f1='v1') OR (f2='v2') OR (f3=2)",
         )
         self.assertEqual(
             builder.parse({
                 '$or': [{'f1': 'v1'}, {'f1': 'v1'},],
             }), 
-            '(f1="v1") OR (f1="v1")',
+            "(f1='v1') OR (f1='v1')",
         )
 
+    def test_escapting_quotes(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(
+            builder.parse({'f1': 'value = "Value"' }), 
+            'f1=\'value = "Value"\'',
+        )
+        self.assertEqual(
+            builder.parse({'f1': "value = 'Value'" }), 
+            'f1="value = \'Value\'"',
+        )
+        
 
     def test_wrong_request_with_logical_opers(self):
         
@@ -67,12 +79,12 @@ class WhereBuilderTest(unittest.TestCase):
     def test_like_syntax(self):
 
         builder = WhereBuilder()
-        self.assertEqual(builder.parse({'f1': '/search pattern/'}), 'f1 LIKE "search pattern"',)
+        self.assertEqual(builder.parse({'f1': '/search pattern/'}), "f1 LIKE 'search pattern'",)
 
     def test_regexp_syntax(self):
 
         builder = WhereBuilder()
-        self.assertEqual(builder.parse({'f1': 'r/search pattern/'}), 'f1 REGEXP "search pattern"',)
+        self.assertEqual(builder.parse({'f1': 'r/search pattern/'}), "f1 REGEXP 'search pattern'",)
 
     def test_none_value(self):
 

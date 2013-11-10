@@ -3,8 +3,8 @@
 # idea was taken from http://docs.mongodb.org/manual/reference/operator/nav-query/
 import re
 
-RE_LIKE = re.compile(r'^/(.+)/$')
-RE_REGEXP = re.compile(r'^r/(.+)/$')
+RE_LIKE = re.compile(r'^/(?P<RE_LIKE>.+)/$')
+RE_REGEXP = re.compile(r'^r/(?P<RE_REGEXP>.+)/$')
 
 '''
 SUPPORTED_OPERATORS = (
@@ -80,12 +80,12 @@ class WhereBuilder(object):
             value = value.strip()
             # LIKE
             if RE_LIKE.match(value):
-                return ' LIKE "%s"' % RE_LIKE.match(value).groups()
+                return ' LIKE %s' % repr(RE_LIKE.match(value).group('RE_LIKE'))
             # REGEXP
             elif RE_REGEXP.match(value):
-                return ' REGEXP "%s"' % RE_REGEXP.search(value).groups()
+                return ' REGEXP %s' % repr(RE_REGEXP.search(value).group('RE_REGEXP'))
             else:            
-                return '="%s"' % value
+                return '=%s' % repr(value)
         elif value is None:
             return ' ISNULL'
 
