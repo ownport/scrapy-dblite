@@ -91,6 +91,35 @@ class WhereBuilderTest(unittest.TestCase):
         builder = WhereBuilder()
         self.assertEqual(builder.parse({'f1': None}), 'f1 ISNULL',)
 
+    def test_orderby(self):
+
+        builder = WhereBuilder()
+        self.assertEqual(
+            builder.parse(
+                {'f1': '/search pattern/', '$orderby': {'f1': -1}}
+            ), 
+            "f1 LIKE 'search pattern' ORDER BY f1 DESC",
+        )
+        self.assertEqual(
+            builder.parse(
+                {'f1': '/search pattern/', '$orderby': {'f1': 1}}
+            ), 
+            "f1 LIKE 'search pattern' ORDER BY f1 ASC",
+        )
+        self.assertEqual(
+            builder.parse(
+                {'$orderby': {'f1': -1, 'f2': 1}}
+            ), 
+            "ORDER BY f1 DESC,f2 ASC",
+        )
+
+    def test_wrong_orderby(self):
+
+        builder = WhereBuilder()
+        self.assertRaises(RuntimeError, builder.parse, {'$orderby': ['f1', 1]})
+        self.assertRaises(RuntimeError, builder._modifier, '$orderby2', ['f1', 1])
+
+
 
 if __name__ == "__main__":
     unittest.main()  

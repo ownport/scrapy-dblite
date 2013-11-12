@@ -12,8 +12,12 @@ SUPPORTED_OPERATORS = (
     '$gt', '$gte', '$in', '$lt', '$lte', '$ne', '$nin',
 )
 '''
+
 # logical
 LOGICAL_OPERATORS = ( '$or', '$and', )
+
+# Query modifiers
+QUERY_MODIFIERS = ( '$orderby', )
 
 
 class WhereBuilder(object):
@@ -35,19 +39,25 @@ class WhereBuilder(object):
         if len(params) == 0:
             return ''        
         
-        result = list()
+        selectors = list()
+        modifiers = list()
         
         for k in params.keys():
             
             if k in LOGICAL_OPERATORS:
-                result.append(self._logical(k, params[k]))
+                selectors.append(self._logical(k, params[k]))
+            elif k in QUERY_MODIFIERS:
+                modifiers.append(self._modifier(k, params[k]))
             else:
                 if k == '_id':
-                    result.append("rowid%s" % (self._value_wrapper(params[k])))
+                    selectors.append("rowid%s" % (self._value_wrapper(params[k])))
                 else:
-                    result.append("%s%s" % (k, self._value_wrapper(params[k])))
-            
-        return ' AND '.join(result).strip()
+                    selectors.append("%s%s" % (k, self._value_wrapper(params[k])))
+        sql = ' AND '.join(selectors).strip()  
+        modifiers_sql = ' '.join(modifiers).strip()
+        if modifiers_sql:
+            sql = ' '.join([sql, modifiers_sql]).strip()
+        return sql
                 
     def _logical(self, operator, params):
         ''' 
@@ -70,6 +80,20 @@ class WhereBuilder(object):
             return ' OR '.join(result)
         else:
             raise RuntimeError('Unknown operator, %s' % operator)        
+
+    def _modifier(self, operator, params):
+        ''' 
+        $orderby:   sorts the results of a query in ascending (1) or descending (-1) order.
+        '''
+
+        if operator == '$orderby':
+            order_types = {-1: 'DESC', 1: 'ASC'}
+            if not isinstance(params, dict):
+                raise RuntimeError('Incorrect parameter type, %s' % params) 
+            return 'ORDER BY %s' % ','.join(["%s %s" % (p, order_types[params[p]]) for p in params])
+        else:
+            raise RuntimeError('Unknown operator, %s' % operator)        
+
     
     def _value_wrapper(self, value):
         ''' wrapper for values 

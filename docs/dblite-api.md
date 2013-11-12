@@ -85,6 +85,20 @@ In case when you need to get details just for one item, get(limit=1) returns Ite
 {'_id': 1, 'name': u'Laptop', 'price': 1000}
 ```
 
+#### ORDER BY
+
+The `$orderby` operator sorts the results of a query in ascending or descending order. Specify 
+a value to $orderby of negative one (e.g. -1, as above) to sort in descending order or a positive 
+value (e.g. 1) to sort in ascending order.
+```python
+ds.get({'$orderby': {'product_name': -1}})
+```
+is equivalent for SQL 
+```sql
+SELECT rowid, * FROM products ORDER BY product_name DESC; 
+```
+
+
 dblite support LIKE and REGEXP syntax for selection items
 
 #### LIKE
