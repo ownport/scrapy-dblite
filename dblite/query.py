@@ -20,44 +20,71 @@ LOGICAL_OPERATORS = ( '$or', '$and', )
 QUERY_MODIFIERS = ( '$orderby', )
 
 
-class WhereBuilder(object):
-    ''' SQL WHERE Builder
+class SQLBuilder(object):
+    ''' SQLBuilder
     '''
-    def __init__(self):
+    def __init__(self, table, params):
         '''__init__
+        table   -
+        params  - is dictionary
         '''
-        self._sql = ''
+        self._table = table
+        self._selectors = ''
+        self._modifiers = ''
 
-    def parse(self, params):
-        ''' parse parameters and return SQL 
+        self._selectors, self._modifiers = self._parse(params)
+
+    def select(self, fields=['rowid', '*']):
+        ''' return SELECT SQL
+        '''
+        SQL = 'SELECT %s FROM %s' % (','.join(fields), self._table)
         
-        params is dictionary
+        if self._selectors:
+            SQL = ' '.join([SQL, 'WHERE', self._selectors]).strip()
+        
+        if self._modifiers:
+            SQL = ' '.join([SQL, self._modifiers])
+
+        return SQL
+
+    def delete(self):
+        ''' return DELETE SQL
+        '''
+        SQL = 'DELETE FROM %s' % self._table
+        if self._selectors:
+            SQL = ' '.join([SQL, 'WHERE', self._selectors]).strip()
+        
+        return SQL
+
+    def _parse(self, params):
+        ''' parse parameters and return SQL 
         '''
         if not isinstance(params, dict):
-            return ''
+            return None, None
 
         if len(params) == 0:
-            return ''        
-        
+            return None, None
+
         selectors = list()
         modifiers = list()
         
         for k in params.keys():
-            
+
             if k in LOGICAL_OPERATORS:
                 selectors.append(self._logical(k, params[k]))
+
             elif k in QUERY_MODIFIERS:
                 modifiers.append(self._modifier(k, params[k]))
+
             else:
                 if k == '_id':
                     selectors.append("rowid%s" % (self._value_wrapper(params[k])))
                 else:
                     selectors.append("%s%s" % (k, self._value_wrapper(params[k])))
-        sql = ' AND '.join(selectors).strip()  
-        modifiers_sql = ' '.join(modifiers).strip()
-        if modifiers_sql:
-            sql = ' '.join([sql, modifiers_sql]).strip()
-        return sql
+
+        _selectors = ' AND '.join(selectors).strip()
+        _modifiers = ' '.join(modifiers).strip()
+        return _selectors, _modifiers 
                 
     def _logical(self, operator, params):
         ''' 
@@ -67,10 +94,15 @@ class WhereBuilder(object):
                 that match the conditions of either clause.
         '''
 
+        result = list()
         if isinstance(params, dict):
-            result = ["(%s)" % self.parse(dict([(k, v),])) for k,v in params.items()]
+            for k,v in params.items():
+                selectors, modifiers = self._parse(dict([(k, v),]))
+                result.append("(%s)" % selectors) 
         elif isinstance(params, (list, tuple)):
-            result = ["(%s)" % self.parse(v) for v in params]
+            for v in params:
+                selectors, modifiers = self._parse(v)
+                result.append("(%s)" % selectors)
         else:
             raise RuntimeError('Unknow parameter type, %s:%s' % (type(params), params))
 
@@ -93,7 +125,6 @@ class WhereBuilder(object):
             return 'ORDER BY %s' % ','.join(["%s %s" % (p, order_types[params[p]]) for p in params])
         else:
             raise RuntimeError('Unknown operator, %s' % operator)        
-
     
     def _value_wrapper(self, value):
         ''' wrapper for values 
