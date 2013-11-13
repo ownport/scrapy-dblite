@@ -11,7 +11,7 @@ import re
 import inspect
 import sqlite3
 
-from .sql import WhereBuilder
+from .query import SQLBuilder
 from urlparse import urlparse
 
 
@@ -208,10 +208,7 @@ class Storage(object):
     def _get_with_criteria(self, criteria, limit=None):
         ''' returns items selected by criteria
         ''' 
-        SQL = "SELECT rowid,* FROM %s" % self._table
-        WHERE = WhereBuilder().parse(criteria)
-        if WHERE:
-            SQL = ' '.join((SQL, 'WHERE', WHERE))
+        SQL = SQLBuilder(self._table, criteria).select()
         
         if limit is not None and isinstance(limit, int):
             SQL = ' '.join((SQL, 'LIMIT %s' % limit, ';'))
@@ -327,16 +324,10 @@ class Storage(object):
         if isinstance(criteria, self._item_class):
             criteria = {'_id': criteria['_id']}
 
-        SQL = 'DELETE FROM %s' % self._table
-        WHERE = WhereBuilder().parse(criteria)
-        if WHERE:
-            SQL = ' '.join((SQL, 'WHERE', WHERE, ';'))
-        elif not _all:
+        if criteria is None and not _all:
             raise RuntimeError('Criteria is not defined')
-        
-        if _all:    
-            SQL = ''.join((SQL, ';'))
-        
+            
+        SQL = SQLBuilder(self._table, criteria).delete()
         self._cursor.execute(SQL)
                 
     def __len__(self):
@@ -359,9 +350,4 @@ class Storage(object):
         '''
         self._conn.close()
 
-    def __del__(self):
-        ''' handle delete Storage
-        '''
-        if getattr(self, '_autocommit', False) is True:
-            self.commit()
         

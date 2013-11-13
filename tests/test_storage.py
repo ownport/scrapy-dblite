@@ -221,14 +221,9 @@ class DBLiteTest(unittest.TestCase):
         self.assertEqual(len(all_items), 10)     
         self.assertEqual(sum([1 for _ in ds.get()]), 10)
 
-        res = [d for d in ds.get({'name': 'product#2'})]       
-        self.assertEqual(len(res), 1)
-
-        res = [d for d in ds.get({'price': 102})]       
-        self.assertEqual(len(res), 1)
-
-        res = [d for d in ds.get({'$and': {'name': 'product#2', 'price': 102}})]       
-        self.assertEqual(len(res), 1)
+        self.assertIsNotNone(ds.get_one({'name': 'product#2'}))
+        self.assertIsNotNone(ds.get_one({'price': 102}))
+        self.assertIsNotNone(ds.get_one({'$and': {'name': 'product#2', 'price': 102}}))
 
     def test_limited_get(self):
         ''' test_limited_get
@@ -257,7 +252,7 @@ class DBLiteTest(unittest.TestCase):
         ds = dblite.Storage(Product, uri, autocommit=True)
 
         ds.put(Product({'name': 'product', 'price': 100}))
-        self.assertIsNone(ds.get({'name': 'Product'}, limit=1))
+        self.assertIsNone(ds.get_one({'name': 'Product'}))
 
         ds.close()
 
@@ -335,9 +330,8 @@ class DBLiteTest(unittest.TestCase):
             Product({'name': 'Nettop'})
         )
         ds.put(products)
-        self.assertEqual(ds.get({'name': '/ptop/'}, limit=1), None)
-        self.assertEqual(ds.get(
-                            {'name': '/%aptop%/'}, limit=1), 
+        self.assertEqual(ds.get_one({'name': '/ptop/'}), None)
+        self.assertEqual(ds.get_one({'name': '/%aptop%/'}), 
                             {
                                 '_id': 1, 'catalog_url': None, 
                                 'name': u'Laptop', 'price': None, 
