@@ -3,6 +3,8 @@
 # idea was taken from http://docs.mongodb.org/manual/reference/operator/nav-query/
 import re
 
+from .settings import ITEMS_PER_REQUEST
+
 RE_LIKE = re.compile(r'^/(?P<RE_LIKE>.+)/$')
 RE_REGEXP = re.compile(r'^r/(?P<RE_REGEXP>.+)/$')
 
@@ -34,7 +36,7 @@ class SQLBuilder(object):
 
         self._selectors, self._modifiers = self._parse(params)
 
-    def select(self, fields=['rowid', '*']):
+    def select(self, fields=['rowid', '*'], offset=None, limit=ITEMS_PER_REQUEST):
         ''' return SELECT SQL
         '''
         SQL = 'SELECT %s FROM %s' % (','.join(fields), self._table)
