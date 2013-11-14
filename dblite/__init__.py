@@ -173,7 +173,7 @@ class Storage(object):
                 item[field] = serializer.loads(item[field])
         return self._item_class(item)
 
-    def get(self, criteria=None, limit=None):
+    def get(self, criteria=None, offset=None, limit=None):
         ''' returns items selected by criteria
         
         If the criteria is not defined, get() returns all items.
@@ -183,7 +183,7 @@ class Storage(object):
         elif limit is not None and limit == 1:
             return self.get_one(criteria)
         else:
-            return self._get_with_criteria(criteria, limit)
+            return self._get_with_criteria(criteria, limit=limit)
 
     def _get_all(self):
         ''' return all items
@@ -199,16 +199,11 @@ class Storage(object):
                 rowid = item['_id']
                 yield self._make_item(item)
 
-    def _get_with_criteria(self, criteria, limit=None):
+    def _get_with_criteria(self, criteria, offset=None, limit=None):
         ''' returns items selected by criteria
         ''' 
-        SQL = SQLBuilder(self._table, criteria).select()
-        
-        if limit is not None and isinstance(limit, int):
-            SQL = ' '.join((SQL, 'LIMIT %s' % limit, ';'))
-        else:
-            SQL = ''.join((SQL, ';'))
-
+        SQL = SQLBuilder(self._table, criteria).select(offset=offset, limit=limit)
+        print SQL
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
             yield self._make_item(item)

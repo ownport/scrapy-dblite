@@ -6,48 +6,48 @@ class SQLBuilderTest(unittest.TestCase):
 
     def test_wrong_params(self):
         
-        self.assertEqual(SQLBuilder('test', params='').select(), 'SELECT rowid,* FROM test')
-        self.assertEqual(SQLBuilder('test', params=None).select(), 'SELECT rowid,* FROM test')
+        self.assertEqual(SQLBuilder('test', params='').select(), 'SELECT rowid,* FROM test;')
+        self.assertEqual(SQLBuilder('test', params=None).select(), 'SELECT rowid,* FROM test;')
 
     def test_empty_params(self):
         
-        self.assertEqual(SQLBuilder('test', {}).select(), 'SELECT rowid,* FROM test')
+        self.assertEqual(SQLBuilder('test', {}).select(), 'SELECT rowid,* FROM test;')
 
     def test_simple_request(self):
         
         self.assertEqual( 
             SQLBuilder('test', {'f1': 'v1'}).select(), 
-            "SELECT rowid,* FROM test WHERE f1='v1'",)
+            "SELECT rowid,* FROM test WHERE f1='v1';",)
 
     def test_logical_and_in_simple_form(self):
 
         self.assertEqual(
             SQLBuilder('test', {'f1': 'v1', 'f2': 'v2'}).select(), 
-            "SELECT rowid,* FROM test WHERE f1='v1' AND f2='v2'")
+            "SELECT rowid,* FROM test WHERE f1='v1' AND f2='v2';")
 
     def test_simple_request_with_logical_opers(self):
         
         self.assertEqual(
             SQLBuilder('test', {'$and': {'f1': 'v1', 'f2': 'v2', 'f3': 2}}).select(), 
-            "SELECT rowid,* FROM test WHERE (f1='v1') AND (f2='v2') AND (f3=2)",)
+            "SELECT rowid,* FROM test WHERE (f1='v1') AND (f2='v2') AND (f3=2);",)
             
         self.assertEqual(
             SQLBuilder('test', {'$or': {'f1': 'v1', 'f2': 'v2', 'f3': 2}}).select(), 
-            "SELECT rowid,* FROM test WHERE (f1='v1') OR (f2='v2') OR (f3=2)",)
+            "SELECT rowid,* FROM test WHERE (f1='v1') OR (f2='v2') OR (f3=2);",)
         
         self.assertEqual(
             SQLBuilder('test', {'$or': [{'f1': 'v1'}, {'f1': 'v1'},],}).select(), 
-            "SELECT rowid,* FROM test WHERE (f1='v1') OR (f1='v1')",)
+            "SELECT rowid,* FROM test WHERE (f1='v1') OR (f1='v1');",)
 
     def test_escapting_quotes(self):
 
         self.assertEqual(
             SQLBuilder('test', {'f1': 'value = "Value"' }).select(), 
-            'SELECT rowid,* FROM test WHERE f1=\'value = "Value"\'',)
+            'SELECT rowid,* FROM test WHERE f1=\'value = "Value"\';',)
             
         self.assertEqual(
             SQLBuilder('test', {'f1': "value = 'Value'" }).select(), 
-            'SELECT rowid,* FROM test WHERE f1="value = \'Value\'"',)
+            'SELECT rowid,* FROM test WHERE f1="value = \'Value\'";',)
 
     def test_wrong_request_with_logical_opers(self):
         
@@ -58,33 +58,33 @@ class SQLBuilderTest(unittest.TestCase):
 
         self.assertEqual(
             SQLBuilder('test', {'f1': '/search pattern/'}).select(), 
-            "SELECT rowid,* FROM test WHERE f1 LIKE 'search pattern'",)
+            "SELECT rowid,* FROM test WHERE f1 LIKE 'search pattern';",)
 
     def test_regexp_syntax(self):
 
         self.assertEqual(
             SQLBuilder('test', {'f1': 'r/search pattern/'}).select(), 
-            "SELECT rowid,* FROM test WHERE f1 REGEXP 'search pattern'",)
+            "SELECT rowid,* FROM test WHERE f1 REGEXP 'search pattern';",)
 
     def test_none_value(self):
 
         self.assertEqual(
             SQLBuilder('test', {'f1': None}).select(), 
-            'SELECT rowid,* FROM test WHERE f1 ISNULL',)
+            'SELECT rowid,* FROM test WHERE f1 ISNULL;',)
 
     def test_orderby(self):
 
         self.assertEqual(
             SQLBuilder('t', {'f1': '/search pattern/', '$orderby': {'f1': -1}}).select(), 
-            "SELECT rowid,* FROM t WHERE f1 LIKE 'search pattern' ORDER BY f1 DESC",)
+            "SELECT rowid,* FROM t WHERE f1 LIKE 'search pattern' ORDER BY f1 DESC;",)
             
         self.assertEqual(
             SQLBuilder('t', {'f1': '/search pattern/', '$orderby': {'f1': 1}}).select(), 
-            "SELECT rowid,* FROM t WHERE f1 LIKE 'search pattern' ORDER BY f1 ASC",)
+            "SELECT rowid,* FROM t WHERE f1 LIKE 'search pattern' ORDER BY f1 ASC;",)
             
         self.assertEqual(
             SQLBuilder('t', {'$orderby': {'f1': -1, 'f2': 1}}).select(), 
-            "SELECT rowid,* FROM t ORDER BY f1 DESC,f2 ASC",
+            "SELECT rowid,* FROM t ORDER BY f1 DESC,f2 ASC;",
         )
 
     def test_wrong_orderby(self):
@@ -92,5 +92,20 @@ class SQLBuilderTest(unittest.TestCase):
         self.assertRaises(RuntimeError, SQLBuilder('t', {})._modifier, '$orderby', ['f1', 1])
         self.assertRaises(RuntimeError, SQLBuilder('t', {})._modifier, '$orderby2', ['f1', 1])
 
+    def test_offset(self):
 
+        self.assertEqual(
+            SQLBuilder('t', {}).select(offset=10, limit=10), 
+            "SELECT rowid,* FROM t OFFSET 10 LIMIT 10;",
+        )
+    
+        self.assertEqual(
+            SQLBuilder('t', {}).select(offset=10), 
+            "SELECT rowid,* FROM t OFFSET 10;",
+        )
+    
+        self.assertEqual(
+            SQLBuilder('t', {}).select(limit=10), 
+            "SELECT rowid,* FROM t LIMIT 10;",
+        )
 
