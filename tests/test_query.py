@@ -96,12 +96,7 @@ class SQLBuilderTest(unittest.TestCase):
 
         self.assertEqual(
             SQLBuilder('t', {}).select(offset=10, limit=10), 
-            "SELECT rowid,* FROM t OFFSET 10 LIMIT 10;",
-        )
-    
-        self.assertEqual(
-            SQLBuilder('t', {}).select(offset=10), 
-            "SELECT rowid,* FROM t OFFSET 10;",
+            "SELECT rowid,* FROM t LIMIT 10 OFFSET 10;",
         )
     
         self.assertEqual(

@@ -48,13 +48,13 @@ class SQLBuilder(object):
         if self._modifiers:
             SQL = ' '.join([SQL, self._modifiers])
 
-        # offset
-        if offset is not None and isinstance(offset, int):
-            SQL = ' '.join((SQL, 'OFFSET %s' % offset))
-
         # limit
         if limit is not None and isinstance(limit, int):
             SQL = ' '.join((SQL, 'LIMIT %s' % limit))
+
+        # offset
+        if (limit is not None) and (offset is not None) and isinstance(offset, int):
+            SQL = ' '.join((SQL, 'OFFSET %s' % offset))
 
         return ''.join((SQL, ';'))
 
