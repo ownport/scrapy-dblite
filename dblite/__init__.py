@@ -183,7 +183,7 @@ class Storage(object):
         elif limit is not None and limit == 1:
             return self.get_one(criteria)
         else:
-            return self._get_with_criteria(criteria, limit=limit)
+            return self._get_with_criteria(criteria, offset=offset, limit=limit)
 
     def _get_all(self):
         ''' return all items
