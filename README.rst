@@ -75,7 +75,6 @@ Using dblite in Item Pipeline::
             self.ds = open(Product, 'sqlite://db/products.sqlite:items', autocommit=True)
 
         def close_spider(self, spider):
-            self.ds.commit()
             self.ds.close()
 
         def process_item(self, item, spider):	        
