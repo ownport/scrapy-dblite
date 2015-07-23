@@ -127,7 +127,7 @@ class Storage(object):
         backend, rest_uri = uri.split('://')
         if backend not in SUPPORTED_BACKENDS:
             raise RuntimeError('Unknown backend: {}'.format(backend))
-        database, table = rest_uri.split(':',1)
+        database, table = rest_uri.rsplit(':',1)
 
         return database, table
 
