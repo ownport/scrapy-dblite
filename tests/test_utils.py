@@ -74,5 +74,17 @@ class DBLiteTest(unittest.TestCase):
         ds = dblite.open(target[0], target[1])
         self.assertEqual(len(ds), 3)
         
+
+    def test_enter_exit(self):
+
+        uri = 'sqlite://tests/db/db-enter-exit.sqlite:test'
+
+        with dblite.open(Product, uri) as ds:
+            ds.put(Product({'name': 'product_name', 'price': 100}))
+            self.assertTrue(isinstance(ds.get(limit=1), Product))
+
+        self.assertEqual(ds.get(limit=1), None)
+
+
 if __name__ == "__main__":
     unittest.main()        

@@ -106,6 +106,17 @@ class Storage(object):
 
         self._create_table(self._table)
 
+
+    def __enter__(self):
+
+        return self
+
+
+    def __exit__(self, type, value, tb):
+
+        self.close()
+
+
     @staticmethod
     def _dict_factory(cursor, row):
         ''' factory for sqlite3 to return results as dict
