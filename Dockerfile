@@ -7,7 +7,7 @@ RUN apt-get update && \
         make \
         python-pip 
 
-RUN pip install nose
+RUN pip install nose coverage
 
 RUN mkdir -p /data/bin
 RUN mkdir -p /data/scrapy-dblite
