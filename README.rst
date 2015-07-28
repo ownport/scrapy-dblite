@@ -87,3 +87,15 @@ Using dblite in Item Pipeline::
                 raise DropItem("Unknown item type, %s" % type(item))
             return item
 
+For developers
+--------------
+
+Creation of development environment
+
+```sh
+$ git clone https://github.com/ownport/scrapy-dblite.git
+$ cd scrapy-dblite
+$ docker build -t 'scrapy-dblite:dev' .
+$ docker run -ti --rm --name 'scrapy-dblite' -v $(pwd):/data/scrapy-dblite scrapy-dblite:dev
+$ 
+```
