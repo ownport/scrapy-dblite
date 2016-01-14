@@ -272,7 +272,7 @@ class Storage(object):
         if '_id' in item:
             fieldnames = ','.join(['%s=?' % f for f in item if f != '_id'])
             values.append(item['_id'])
-            SQL = 'INSERT OR REPLACE INTO %s VALUES (%s);' % (self._table, fieldnames)
+            SQL = 'UPDATE %s SET %s WHERE rowid=?;' % (self._table, fieldnames)
         # new Item
         else:
             fieldnames = ','.join([f for f in item if f != '_id'])
