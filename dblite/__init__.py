@@ -36,16 +36,16 @@ def copy(src, trg, transform=None):
     '''
     source = open(src[0], src[1])
     target = open(trg[0], trg[1], autocommit=1000)
-
+    
     for item in source.get():
         item = dict(item)
         if '_id' in item:
             del item['_id']
-
+            
         if transform:
             item = transform(item)
         target.put(trg[0](item))
-
+        
     source.close()
     target.commit()
     target.close()
@@ -60,12 +60,12 @@ def _regexp(expr, item):
 
 class Storage(object):
     ''' Storage
-
+    
     store simple dictionaries in sqlite database
     '''
     def __init__(self, item, uri, autocommit=False):
         ''' __init__
-
+        
         item        - Scrapy item class
         uri         - URI to sqlite database, sqlite://<sqlite-database>:<table>
         autocommit  - few variations are possible: boolean (False/True) or integer
@@ -88,7 +88,7 @@ class Storage(object):
             self._table = table.split(' ')[0]
         else:
             raise RuntimeError('Empty table name, "%s"' % table)
-
+        
         # sqlite connection
         try:
             self._conn = sqlite3.connect(database)
@@ -102,7 +102,7 @@ class Storage(object):
         # autocommit data after put()
         self._autocommit = autocommit
         # commit counter increased every time after put without commit()
-        self._commit_counter = 0
+        self._commit_counter = 0 
 
         self._create_table(self._table)
 
@@ -176,7 +176,7 @@ class Storage(object):
                 raise RuntimeError('Create table error, %s, SQL: %s' % (err, SQL))
 
     def _make_item(self, item):
-        ''' make Item class
+        ''' make Item class 
         '''
         for field in self._item_class.fields:
             if (field in item) and ('dblite_serializer' in self._item_class.fields[field]):
@@ -186,7 +186,7 @@ class Storage(object):
 
     def get(self, criteria=None, offset=None, limit=None):
         ''' returns items selected by criteria
-
+        
         If the criteria is not defined, get() returns all items.
         '''
         if criteria is None and limit is None:
@@ -212,7 +212,7 @@ class Storage(object):
 
     def _get_with_criteria(self, criteria, offset=None, limit=None):
         ''' returns items selected by criteria
-        '''
+        ''' 
         SQL = SQLBuilder(self._table, criteria).select(offset=offset, limit=limit)
         self._cursor.execute(SQL)
         for item in self._cursor.fetchall():
@@ -236,7 +236,7 @@ class Storage(object):
         if isinstance(self._autocommit, bool) and self._autocommit:
             self.commit()
             self._commit_counter = 0
-
+        
         # autocommit as counter
         elif isinstance(self._autocommit, int) and self._autocommit > 0:
             if (self._commit_counter % self._autocommit) == 0:
@@ -272,20 +272,20 @@ class Storage(object):
         if '_id' in item:
             fieldnames = ','.join(['%s=?' % f for f in item if f != '_id'])
             values.append(item['_id'])
-            SQL = 'INSERT OR REPLACE INTO %s VALUES (%s);' % (self._table, fieldnames)
+            SQL = 'UPDATE %s SET %s WHERE rowid=?;' % (self._table, fieldnames)
         # new Item
         else:
             fieldnames = ','.join([f for f in item if f != '_id'])
             fieldnames_template = ','.join(['?' for f in item if f != '_id'])
             SQL = 'INSERT INTO %s (%s) VALUES (%s);' % (self._table, fieldnames, fieldnames_template)
-
+            
         try:
             self._cursor.execute(SQL, values)
         except sqlite3.OperationalError, err:
             raise RuntimeError('Item put() error, %s, SQL: %s, values: %s' % (err, SQL, values) )
         except sqlite3.IntegrityError:
             raise DuplicateItem('Duplicate item, %s' % item)
-        self._do_autocommit()
+        self._do_autocommit()        
 
     def _put_many(self, items):
         ''' store items in sqlite database
@@ -300,7 +300,7 @@ class Storage(object):
         '''
         def _items(items):
             for item in items:
-                yield self._item_class(item)
+                yield self._item_class(item)        
 
         sql = sql.strip()
         try:
@@ -317,7 +317,7 @@ class Storage(object):
 
     def delete(self, criteria=None, _all=False):
         ''' delete dictionary(ies) in sqlite database
-
+        
         _all = True - delete all items
         '''
         if isinstance(criteria, self._item_class):
@@ -325,10 +325,10 @@ class Storage(object):
 
         if criteria is None and not _all:
             raise RuntimeError('Criteria is not defined')
-
+            
         SQL = SQLBuilder(self._table, criteria).delete()
         self._cursor.execute(SQL)
-
+                
     def __len__(self):
         ''' return size of storage
         '''
@@ -349,4 +349,4 @@ class Storage(object):
         '''
         self._conn.close()
 
-
+        
