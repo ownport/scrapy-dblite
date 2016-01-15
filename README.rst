@@ -95,7 +95,8 @@ Creation of development environment::
     $ git clone https://github.com/ownport/scrapy-dblite.git
     $ cd scrapy-dblite
     $ docker build -t 'scrapy-dblite:dev' .
-    $ docker run -ti --rm --name 'scrapy-dblite' -v $(pwd):/data/scrapy-dblite scrapy-dblite:dev
+    $ docker run -ti --rm --name 'scrapy-dblite' -v $(pwd):/data/scrapy-dblite scrapy-dblite:dev /data/bin/run-as.sh dev 1000 /bin/sh
+
     $ cd /data/scrapy-dblite/
 
 Perform unit tests::
