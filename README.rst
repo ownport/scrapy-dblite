@@ -1,6 +1,9 @@
 scrapy-dblite
 =============
 
+**The component is not supported anymore**. As alternative, you can use `ownport/scrapy-rethinkdb <https://github.com/ownport/scrapy-rethinkdb>`_, forked from `sprij/scrapy-rethinkdb <https://github.com/sprij/scrapy-rethinkdb>`_
+
+
 Simple library for storing `Scrapy Items <http://doc.scrapy.org/en/latest/topics/items.html>`_ in sqlite. There's no special requirements or dependencies for using this library but main goal of dblite is working together with `Scrapy <http://scrapy.org/>`_ - a fast high-level screen scraping and web crawling framework, used to crawl websites and extract structured data from their pages.
 
 According to `Scrapy documentation <http://doc.scrapy.org/en/latest/>`_ Item objects are simple containers used to collect the scraped data. They provide a dictionary-like API with a convenient syntax for declaring their available fields.::
